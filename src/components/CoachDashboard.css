@@ -1,0 +1,127 @@
+:root {
+    --dark-bg: #1a2a1a;
+    --gold-accent: #FFD700;
+    --light-text: #f0f0f0;
+    --panel-bg: #2c3e50;
+}
+
+.dashboard-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: var(--panel-bg);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    font-family: 'Montserrat', sans-serif;
+    color: var(--light-text);
+    border: 1px solid var(--gold-accent);
+}
+
+.dashboard-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 3.5rem;
+    text-align: center;
+    color: var(--gold-accent);
+    letter-spacing: 2px;
+}
+
+.team-name {
+    text-align: center;
+    font-size: 1.4rem;
+    color: var(--light-text);
+    margin-bottom: 40px;
+}
+
+.player-status-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-header, .table-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    align-items: center;
+}
+
+.table-header {
+    font-weight: bold;
+    background-color: rgba(0,0,0,0.3);
+    color: var(--gold-accent);
+    font-size: 1.1rem;
+}
+
+.table-row:last-child {
+    border-bottom: none;
+}
+
+.table-row.injured {
+    background-color: rgba(217, 83, 79, 0.2);
+    color: #f0f0f0;
+}
+
+.form-bar-container {
+    width: 120px;
+    height: 14px;
+    background-color: rgba(0,0,0,0.3);
+    border-radius: 7px;
+    overflow: hidden;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.form-bar {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.5s ease-in-out;
+}
+
+.form-high { background-color: #28a745; }
+.form-medium { background-color: #ffc107; }
+.form-low { background-color: #dc3545; }
+
+.form-value {
+    font-weight: bold;
+}
+
+.dashboard-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 40px;
+}
+
+.action-button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Montserrat', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.next-button {
+    background-color: var(--gold-accent);
+    color: #111;
+}
+
+.next-button:hover {
+    background-color: #fff;
+    transform: translateY(-2px);
+}
+
+.season-button {
+    background-color: transparent;
+    color: var(--gold-accent);
+    border: 1px solid var(--gold-accent);
+}
+
+.season-button:hover {
+    background-color: var(--gold-accent);
+    color: #111;
+    transform: translateY(-2px);
+}

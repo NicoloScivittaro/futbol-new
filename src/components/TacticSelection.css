@@ -1,0 +1,103 @@
+:root {
+    --dark-bg: #1a2a1a; /* Verde scurissimo */
+    --pitch-green: #2a8a2a;
+    --pitch-lines: rgba(255, 255, 255, 0.2);
+    --gold-accent: #FFD700;
+    --light-text: #f0f0f0;
+}
+
+.tactic-board-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    background-color: var(--dark-bg);
+    font-family: 'Montserrat', sans-serif;
+    min-height: 100vh;
+}
+
+.tactic-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 3.5rem;
+    color: var(--gold-accent);
+    margin-bottom: 25px;
+    letter-spacing: 2px;
+}
+
+.formation-selector {
+    margin-bottom: 25px;
+}
+
+.formation-selector select {
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    border: 1px solid var(--gold-accent);
+    background-color: #2a2a2a;
+    color: var(--light-text);
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.pitch {
+    position: relative;
+    width: 400px;
+    height: 600px;
+    background: radial-gradient(circle, #3a9a3a, var(--pitch-green));
+    border: 3px solid var(--pitch-lines);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.pitch-lines {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 2px solid var(--pitch-lines);
+    box-sizing: border-box;
+}
+
+.pitch-lines::before, .pitch-lines::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    border-color: var(--pitch-lines);
+}
+
+.pitch-lines::before {
+    top: 0;
+    bottom: 0;
+    border-left: 2px solid var(--pitch-lines);
+}
+
+.pitch-lines::after {
+    top: 50%;
+    width: 80px;
+    height: 80px;
+    border: 2px solid var(--pitch-lines);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.player {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.5), 0 2px 5px rgba(0,0,0,0.3);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+}
+
+.goalkeeper { background-color: #f0ad4e; }
+.defenders { background-color: #337ab7; }
+.midfielders { background-color: #5cb85c; }
+.forwards { background-color: #d9534f; }

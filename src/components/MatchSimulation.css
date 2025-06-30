@@ -1,0 +1,128 @@
+:root {
+    --dark-bg: #1a2a1a;
+    --gold-accent: #FFD700;
+    --light-text: #f0f0f0;
+    --panel-bg: #2c3e50;
+}
+
+.match-simulation-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: var(--dark-bg);
+    border-radius: 12px;
+    font-family: 'Montserrat', sans-serif;
+    color: var(--light-text);
+    border: 1px solid var(--gold-accent);
+}
+
+.scoreboard {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 20px;
+    background-color: #000;
+    color: white;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border-bottom: 3px solid var(--gold-accent);
+}
+
+.team-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.team-crest {
+    width: 60px;
+    height: 60px;
+}
+
+.team-name {
+    font-size: 2rem;
+    font-family: 'Bebas Neue', cursive;
+    letter-spacing: 1px;
+}
+
+.score {
+    font-size: 3.5rem;
+    font-family: 'Bebas Neue', cursive;
+}
+
+.timeline-container {
+    height: 60vh;
+    overflow-y: auto;
+    padding: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    background-color: rgba(0,0,0,0.2);
+}
+
+.timeline-event {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.event-minute {
+    font-weight: bold;
+    color: var(--gold-accent);
+    flex-basis: 60px;
+    font-size: 1.1rem;
+}
+
+.event-details {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-grow: 1;
+}
+
+.event-team-crest {
+    width: 25px;
+    height: 25px;
+}
+
+.event-type {
+    font-weight: 500;
+}
+
+.event-type.goal {
+    font-weight: bold;
+    color: #28a745; /* Verde brillante per il gol */
+    text-transform: uppercase;
+}
+
+.event-player {
+    font-style: italic;
+    color: #ccc;
+}
+
+.event-score {
+    font-weight: bold;
+    flex-basis: 100px;
+    text-align: right;
+    font-size: 1.1rem;
+}
+
+.match-end-message {
+    text-align: center;
+    padding: 25px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--gold-accent);
+    font-family: 'Bebas Neue', cursive;
+}
+
+.match-end-actions {
+    text-align: center;
+    margin-top: 20px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}

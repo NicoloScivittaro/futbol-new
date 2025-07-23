@@ -47,53 +47,32 @@ function AppContent() {
     }
   }, []); // Run only once on mount
 
-  const handleTeamSelected = async ({ team: selectedTeam, style, allTeams }) => {
+  const handleTeamSelected = ({ team: selectedTeam, style, allTeams }) => {
     setLoading(true);
     
     try {
-      console.log('Loading squad data for all teams...');
+      console.log('Processing teams data...');
       
-      const allTeamsData = await Promise.all(
-        allTeams.map(async (team, index) => {
-          if (index > 0) {
-            await new Promise(resolve => setTimeout(resolve, 200));
-          }
-          
-          try {
-            console.log(`Loading squad for ${team.name}...`);
-            
-            const response = await fetch(`/api/v4/teams/${team.id}?season=2024`);
-            
-            if (response.ok) {
-              const teamData = await response.json();
-              console.log(`✓ Loaded squad for ${team.name}: ${teamData.squad?.length || 0} players`);
-              return { ...team, squad: teamData.squad || [] };
-            } else {
-              console.warn(`⚠ Failed to load squad for ${team.name} (${response.status}), using default squad`);
-              const defaultSquad = Array.from({ length: 25 }, (_, i) => ({
-                id: team.id * 1000 + i + 1,
-                name: `${team.name.split(' ')[0]} Player ${i + 1}`,
-                position: i === 0 ? 'Goalkeeper' : (i < 8 ? 'Defender' : (i < 16 ? 'Midfielder' : 'Attacker')),
-                nationality: 'Italy',
-                dateOfBirth: '1995-01-01',
-                shirtNumber: i + 1
-              }));
-              return { ...team, squad: defaultSquad };
-            }
-          } catch (error) {
-            console.warn(`✗ Error loading squad for ${team.name}:`, error.message);
-            const defaultSquad = Array.from({ length: 25 }, (_, i) => ({
-              id: team.id * 1000 + i + 1,
-              name: `${team.name.split(' ')[0]} Player ${i + 1}`,
-              position: i === 0 ? 'Goalkeeper' : (i < 8 ? 'Defender' : (i < 16 ? 'Midfielder' : 'Attacker')),
-              nationality: 'Italy',
-              dateOfBirth: '1995-01-01',
-              shirtNumber: i + 1
-            }));
-            return { ...team, squad: defaultSquad };
-          }
-        })
-      );
+      // Since teams already come with squad data from local file, just process them
+      const allTeamsData = allTeams.map(team => {
+        if (!team.squad || team.squad.length === 0) {
+          console.warn(`Squad for team ${team.name} not found, creating default squad`);
+          // Create a more realistic default squad
+          const defaultSquad = Array.from({ length: 25 }, (_, i) => ({
+            id: team.id * 1000 + i + 1,
+            name: `${team.name.split(' ')[0]} Player ${i + 1}`,
+            position: i === 0 ? 'Goalkeeper' : (i < 8 ? 'Defender' : (i < 16 ? 'Midfielder' : 'Attacker')),
+            nationality: 'Italy',
+            dateOfBirth: '1995-01-01',
+            shirtNumber: i + 1
+          }));
+          return { ...team, squad: defaultSquad };
+        }
+        
+        // Team already has squad data from local file
+        console.log(`✓ Team ${team.name} has ${team.squad.length} players`);
+        return team;
+      });
 
       console.log('All teams processed');
       const finalUserTeam = allTeamsData.find(t => t.id === selectedTeam.id);
@@ -110,6 +89,7 @@ function AppContent() {
       setStep('lineup');
     } catch (error) {
       console.error('Error in handleTeamSelected:', error);
+      // Fallback to basic team data
       const selection = {
         userTeam: selectedTeam,
         teams: allTeams,

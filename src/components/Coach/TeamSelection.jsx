@@ -17,89 +17,36 @@ export default function TeamSelection({ onTeamSelected }) {
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        // First try to fetch from the API with current season
-        const baseUrl = process.env.NODE_ENV === 'production' ? '/api/v4' : '';
+        console.log('Loading teams from local seriea_squad.json file...');
         
-        // Try different season approaches
-        let response;
-        let data;
-        
-        // First try: no season parameter (should get latest)
-        console.log('Trying to fetch teams without season parameter...');
-        response = await fetch(`${baseUrl}/competitions/${competitionCode}/teams`);
-        
+        // Load teams from local file
+        const response = await fetch('/seriea_squad.json');
         if (!response.ok) {
-          // Second try: with 2024 season
-          console.log('Trying to fetch teams with season=2024...');
-          response = await fetch(`${baseUrl}/competitions/${competitionCode}/teams?season=2024`);
+          throw new Error(`Local file error! status: ${response.status}`);
         }
         
-        if (!response.ok) {
-          // Third try: with 2023 season as fallback
-          console.log('Trying to fetch teams with season=2023...');
-          response = await fetch(`${baseUrl}/competitions/${competitionCode}/teams?season=2023`);
-        }
+        const data = await response.json();
+        console.log('Successfully loaded teams from local file:', data.teams?.length || 0, 'teams');
         
-        if (!response.ok) {
-          throw new Error(`API error! status: ${response.status}`);
-        }
-        
-        data = await response.json();
-        console.log('Successfully fetched teams:', data.teams?.length || 0, 'teams');
-        
-        // Fetch full squad data for each team
-        const teamsWithSquads = await Promise.all(
-          (data.teams || []).map(async (team) => {
-            try {
-              console.log(`Fetching squad for ${team.name}...`);
-              
-              // Try different season approaches for individual teams too
-              let teamResponse;
-              
-              // First try: no season parameter
-              teamResponse = await fetch(`${baseUrl}/teams/${team.id}`);
-              
-              if (!teamResponse.ok) {
-                // Second try: with 2024 season
-                teamResponse = await fetch(`${baseUrl}/teams/${team.id}?season=2024`);
-              }
-              
-              if (!teamResponse.ok) {
-                // Third try: with 2023 season
-                teamResponse = await fetch(`${baseUrl}/teams/${team.id}?season=2023`);
-              }
-              
-              if (teamResponse.ok) {
-                const teamData = await teamResponse.json();
-                console.log(`✓ Loaded squad for ${team.name}: ${teamData.squad?.length || 0} players`);
-                return { ...team, squad: teamData.squad || [] };
-              } else {
-                console.warn(`✗ Failed to fetch squad for ${team.name}, using basic data`);
-                return team;
-              }
-            } catch (error) {
-              console.warn(`✗ Error fetching squad for ${team.name}:`, error);
-              return team;
-            }
-          })
-        );
-        
-        setTeams(teamsWithSquads);
-        console.log('All teams loaded with squad data');
+        // The file should already contain squad data for each team
+        setTeams(data.teams || []);
+        console.log('All teams loaded with squad data from local file');
       } catch (e) {
-        console.error("Failed to fetch from API, trying local file:", e);
-        // If API fails, try to fetch from local file
+        console.error("Failed to load from seriea_squad.json, trying fallback files:", e);
+        
+        // Fallback to sa_teams.json if seriea_squad.json doesn't exist
         try {
           const response = await fetch('/sa_teams.json');
           if (!response.ok) {
-            throw new Error(`Local file error! status: ${response.status}`);
+            throw new Error(`Fallback file error! status: ${response.status}`);
           }
           const data = await response.json();
           setTeams(data.teams || []);
-          setError(null); // Clear error if local file succeeds
+          setError(null);
+          console.log('Loaded teams from fallback sa_teams.json');
         } catch (localError) {
-          setError("Failed to load teams data");
-          console.error("Failed to fetch from local file:", localError);
+          setError("Failed to load teams data from local files");
+          console.error("Failed to fetch from any local file:", localError);
         }
       } finally {
         setLoading(false);
@@ -117,42 +64,13 @@ export default function TeamSelection({ onTeamSelected }) {
     setError(null);
 
     try {
-      const baseUrl = process.env.NODE_ENV === 'production' ? '/api/v4' : '';
-      const currentSeason = '2024';
-      const response = await fetch(`${baseUrl}/teams/${selectedTeamId}?season=${currentSeason}`);
-      let teamData;
-
-      if (response.ok) {
-        teamData = await response.json();
-      } else {
-        console.warn(`API error for team ${selectedTeamId}: ${response.status}. Falling back to basic data.`);
-        teamData = teams.find(t => t.id === parseInt(selectedTeamId)) || {};
-      }
-
-      // Fallback for Roma squad
-      if (parseInt(selectedTeamId) === 100 && (!teamData.squad || teamData.squad.length === 0)) {
-        console.log("AS Roma squad not found via API, attempting to load from local fallback.");
-        try {
-          const fallbackResponse = await fetch('/roma_squad.json');
-          if (fallbackResponse.ok) {
-            const fallbackData = await fallbackResponse.json();
-            teamData.squad = fallbackData.squad; // Merge local squad into team data
-            console.log("Successfully loaded AS Roma squad from local file.");
-          } else {
-            console.error("Could not load local fallback squad for AS Roma.");
-          }
-        } catch (fallbackError) {
-          console.error("Error fetching local fallback squad for AS Roma:", fallbackError);
-        }
-      }
-
-      if (!teamData.squad || teamData.squad.length === 0) {
-        const teamName = teamData.name || teams.find(t => t.id === parseInt(selectedTeamId))?.name;
-        console.warn(`Squad for team ${teamName} is not available. App.js will use a default squad.`);
+      const selectedTeam = teams.find(t => t.id === parseInt(selectedTeamId));
+      if (!selectedTeam.squad || selectedTeam.squad.length === 0) {
+        console.warn(`Squad for team ${selectedTeam.name} is not available. App.js will use a default squad.`);
       }
 
       onTeamSelected({
-        team: teamData,
+        team: selectedTeam,
         style: selectedStyle,
         allTeams: teams,
       });

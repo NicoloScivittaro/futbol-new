@@ -1,0 +1,352 @@
+{
+  "teams": [
+    {
+      "id": 100,
+      "name": "AS Roma",
+      "shortName": "Roma",
+      "tla": "ROM",
+      "crest": "https://crests.football-data.org/100.png",
+      "address": "Via di Trigoria, Km 3.600 Roma 00128",
+      "website": "http://www.asroma.com",
+      "founded": 1927,
+      "clubColors": "Maroon / Orange",
+      "venue": "Stadio Olimpico",
+      "squad": [
+        {
+          "id": 1001,
+          "name": "Rui Patrício",
+          "position": "Goalkeeper",
+          "dateOfBirth": "1988-02-15",
+          "nationality": "Portugal",
+          "shirtNumber": 1
+        },
+        {
+          "id": 1002,
+          "name": "Mile Svilar",
+          "position": "Goalkeeper",
+          "dateOfBirth": "1999-08-27",
+          "nationality": "Belgium",
+          "shirtNumber": 99
+        },
+        {
+          "id": 1003,
+          "name": "Gianluca Mancini",
+          "position": "Defender",
+          "dateOfBirth": "1996-04-17",
+          "nationality": "Italy",
+          "shirtNumber": 23
+        },
+        {
+          "id": 1004,
+          "name": "Chris Smalling",
+          "position": "Defender",
+          "dateOfBirth": "1989-11-22",
+          "nationality": "England",
+          "shirtNumber": 6
+        },
+        {
+          "id": 1005,
+          "name": "Evan Ndicka",
+          "position": "Defender",
+          "dateOfBirth": "1999-08-20",
+          "nationality": "France",
+          "shirtNumber": 5
+        },
+        {
+          "id": 1006,
+          "name": "Leonardo Spinazzola",
+          "position": "Defender",
+          "dateOfBirth": "1993-03-25",
+          "nationality": "Italy",
+          "shirtNumber": 37
+        },
+        {
+          "id": 1007,
+          "name": "Rasmus Kristensen",
+          "position": "Defender",
+          "dateOfBirth": "1997-07-11",
+          "nationality": "Denmark",
+          "shirtNumber": 43
+        },
+        {
+          "id": 1008,
+          "name": "Bryan Cristante",
+          "position": "Midfielder",
+          "dateOfBirth": "1995-03-03",
+          "nationality": "Italy",
+          "shirtNumber": 4
+        },
+        {
+          "id": 1009,
+          "name": "Lorenzo Pellegrini",
+          "position": "Midfielder",
+          "dateOfBirth": "1996-06-19",
+          "nationality": "Italy",
+          "shirtNumber": 7
+        },
+        {
+          "id": 1010,
+          "name": "Leandro Paredes",
+          "position": "Midfielder",
+          "dateOfBirth": "1994-06-29",
+          "nationality": "Argentina",
+          "shirtNumber": 16
+        },
+        {
+          "id": 1011,
+          "name": "Renato Sanches",
+          "position": "Midfielder",
+          "dateOfBirth": "1997-08-18",
+          "nationality": "Portugal",
+          "shirtNumber": 55
+        },
+        {
+          "id": 1012,
+          "name": "Houssem Aouar",
+          "position": "Midfielder",
+          "dateOfBirth": "1998-06-30",
+          "nationality": "France",
+          "shirtNumber": 22
+        },
+        {
+          "id": 1013,
+          "name": "Edoardo Bove",
+          "position": "Midfielder",
+          "dateOfBirth": "2002-05-16",
+          "nationality": "Italy",
+          "shirtNumber": 52
+        },
+        {
+          "id": 1014,
+          "name": "Paulo Dybala",
+          "position": "Attacker",
+          "dateOfBirth": "1993-11-15",
+          "nationality": "Argentina",
+          "shirtNumber": 21
+        },
+        {
+          "id": 1015,
+          "name": "Romelu Lukaku",
+          "position": "Attacker",
+          "dateOfBirth": "1993-05-13",
+          "nationality": "Belgium",
+          "shirtNumber": 90
+        },
+        {
+          "id": 1016,
+          "name": "Andrea Belotti",
+          "position": "Attacker",
+          "dateOfBirth": "1993-12-20",
+          "nationality": "Italy",
+          "shirtNumber": 11
+        },
+        {
+          "id": 1017,
+          "name": "Sardar Azmoun",
+          "position": "Attacker",
+          "dateOfBirth": "1995-01-01",
+          "nationality": "Iran",
+          "shirtNumber": 9
+        },
+        {
+          "id": 1018,
+          "name": "Stephan El Shaarawy",
+          "position": "Attacker",
+          "dateOfBirth": "1992-10-27",
+          "nationality": "Italy",
+          "shirtNumber": 92
+        }
+      ]
+    },
+    {
+      "id": 108,
+      "name": "AC Milan",
+      "shortName": "Milan",
+      "tla": "MIL",
+      "crest": "https://crests.football-data.org/108.png",
+      "address": "Via Aldo Rossi, 8 Milano 20149",
+      "website": "http://www.acmilan.com",
+      "founded": 1899,
+      "clubColors": "Red / Black",
+      "venue": "San Siro",
+      "squad": [
+        {
+          "id": 2001,
+          "name": "Mike Maignan",
+          "position": "Goalkeeper",
+          "dateOfBirth": "1995-07-03",
+          "nationality": "France",
+          "shirtNumber": 16
+        },
+        {
+          "id": 2002,
+          "name": "Theo Hernández",
+          "position": "Defender",
+          "dateOfBirth": "1997-10-06",
+          "nationality": "France",
+          "shirtNumber": 19
+        },
+        {
+          "id": 2003,
+          "name": "Rafael Leão",
+          "position": "Attacker",
+          "dateOfBirth": "1999-06-10",
+          "nationality": "Portugal",
+          "shirtNumber": 10
+        },
+        {
+          "id": 2004,
+          "name": "Olivier Giroud",
+          "position": "Attacker",
+          "dateOfBirth": "1986-09-30",
+          "nationality": "France",
+          "shirtNumber": 9
+        }
+      ]
+    },
+    {
+      "id": 109,
+      "name": "Juventus FC",
+      "shortName": "Juventus",
+      "tla": "JUV",
+      "crest": "https://crests.football-data.org/109.png",
+      "address": "Corso Gaetano Scirea, 50 Torino 10151",
+      "website": "http://www.juventus.com",
+      "founded": 1897,
+      "clubColors": "Black / White",
+      "venue": "Allianz Stadium",
+      "squad": [
+        {
+          "id": 3001,
+          "name": "Wojciech Szczęsny",
+          "position": "Goalkeeper",
+          "dateOfBirth": "1990-04-18",
+          "nationality": "Poland",
+          "shirtNumber": 1
+        },
+        {
+          "id": 3002,
+          "name": "Federico Chiesa",
+          "position": "Attacker",
+          "dateOfBirth": "1997-10-25",
+          "nationality": "Italy",
+          "shirtNumber": 7
+        },
+        {
+          "id": 3003,
+          "name": "Dušan Vlahović",
+          "position": "Attacker",
+          "dateOfBirth": "2000-01-28",
+          "nationality": "Serbia",
+          "shirtNumber": 9
+        }
+      ]
+    },
+    {
+      "id": 113,
+      "name": "SSC Napoli",
+      "shortName": "Napoli",
+      "tla": "NAP",
+      "crest": "https://crests.football-data.org/113.png",
+      "address": "Via Corrado Ferlaino, 70 Napoli 80142",
+      "website": "http://www.sscnapoli.it",
+      "founded": 1926,
+      "clubColors": "Sky Blue / White",
+      "venue": "Stadio Diego Armando Maradona",
+      "squad": [
+        {
+          "id": 4001,
+          "name": "Alex Meret",
+          "position": "Goalkeeper",
+          "dateOfBirth": "1997-03-22",
+          "nationality": "Italy",
+          "shirtNumber": 1
+        },
+        {
+          "id": 4002,
+          "name": "Victor Osimhen",
+          "position": "Attacker",
+          "dateOfBirth": "1998-12-29",
+          "nationality": "Nigeria",
+          "shirtNumber": 9
+        },
+        {
+          "id": 4003,
+          "name": "Khvicha Kvaratskhelia",
+          "position": "Attacker",
+          "dateOfBirth": "2001-02-12",
+          "nationality": "Georgia",
+          "shirtNumber": 77
+        }
+      ]
+    },
+    {
+      "id": 115,
+      "name": "Udinese Calcio",
+      "shortName": "Udinese",
+      "tla": "UDI",
+      "crest": "https://crests.football-data.org/115.png",
+      "address": "Via Antonio Candolini, 2 Udine 33100",
+      "website": "http://www.udinese.it",
+      "founded": 1896,
+      "clubColors": "Black / White",
+      "venue": "Dacia Arena",
+      "squad": [
+        {
+          "id": 5001,
+          "name": "Marco Silvestri",
+          "position": "Goalkeeper",
+          "dateOfBirth": "1991-03-02",
+          "nationality": "Italy",
+          "shirtNumber": 1
+        },
+        {
+          "id": 5002,
+          "name": "Beto",
+          "position": "Attacker",
+          "dateOfBirth": "1998-01-31",
+          "nationality": "Portugal",
+          "shirtNumber": 9
+        }
+      ]
+    },
+    {
+      "id": 471,
+      "name": "US Sassuolo Calcio",
+      "shortName": "Sassuolo",
+      "tla": "SAS",
+      "crest": "https://crests.football-data.org/471.png",
+      "address": "Via Gustav Tauschek, 1 Sassuolo 41049",
+      "website": "http://www.sassuolocalcio.it",
+      "founded": 1920,
+      "clubColors": "Green / Black",
+      "venue": "MAPEI Stadium - Città del Tricolore",
+      "squad": [
+        {
+          "id": 6001,
+          "name": "Andrea Consigli",
+          "position": "Goalkeeper",
+          "dateOfBirth": "1987-01-27",
+          "nationality": "Italy",
+          "shirtNumber": 47
+        },
+        {
+          "id": 6002,
+          "name": "Domenico Berardi",
+          "position": "Attacker",
+          "dateOfBirth": "1994-08-01",
+          "nationality": "Italy",
+          "shirtNumber": 10
+        },
+        {
+          "id": 6003,
+          "name": "Armand Laurienté",
+          "position": "Attacker",
+          "dateOfBirth": "1998-12-04",
+          "nationality": "France",
+          "shirtNumber": 45
+        }
+      ]
+    }
+  ]
+}

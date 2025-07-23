@@ -17,59 +17,75 @@ export default function TeamSelection({ onTeamSelected }) {
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        console.log('Fetching teams from API...');
+        // First try to fetch from the API with current season
+        const baseUrl = process.env.NODE_ENV === 'production' ? '/api/v4' : '';
         
-        // Try different approaches to get teams
+        // Try different season approaches
         let response;
         let data;
         
-        // First try: current season
-        try {
-          console.log('Trying: /api/v4/competitions/SA/teams?season=2024');
-          response = await fetch('/api/v4/competitions/SA/teams?season=2024');
-          if (response.ok) {
-            data = await response.json();
-            console.log('✓ Success with season=2024');
-          }
-        } catch (e) {
-          console.log('✗ Failed with season=2024:', e.message);
+        // First try: no season parameter (should get latest)
+        console.log('Trying to fetch teams without season parameter...');
+        response = await fetch(`${baseUrl}/competitions/${competitionCode}/teams`);
+        
+        if (!response.ok) {
+          // Second try: with 2024 season
+          console.log('Trying to fetch teams with season=2024...');
+          response = await fetch(`${baseUrl}/competitions/${competitionCode}/teams?season=2024`);
         }
         
-        // Second try: no season parameter
-        if (!data) {
-          try {
-            console.log('Trying: /api/v4/competitions/SA/teams');
-            response = await fetch('/api/v4/competitions/SA/teams');
-            if (response.ok) {
-              data = await response.json();
-              console.log('✓ Success without season parameter');
-            }
-          } catch (e) {
-            console.log('✗ Failed without season:', e.message);
-          }
+        if (!response.ok) {
+          // Third try: with 2023 season as fallback
+          console.log('Trying to fetch teams with season=2023...');
+          response = await fetch(`${baseUrl}/competitions/${competitionCode}/teams?season=2023`);
         }
         
-        // Third try: previous season
-        if (!data) {
-          try {
-            console.log('Trying: /api/v4/competitions/SA/teams?season=2023');
-            response = await fetch('/api/v4/competitions/SA/teams?season=2023');
-            if (response.ok) {
-              data = await response.json();
-              console.log('✓ Success with season=2023');
-            }
-          } catch (e) {
-            console.log('✗ Failed with season=2023:', e.message);
-          }
+        if (!response.ok) {
+          throw new Error(`API error! status: ${response.status}`);
         }
         
-        if (!data) {
-          throw new Error('All API attempts failed');
-        }
-        
+        data = await response.json();
         console.log('Successfully fetched teams:', data.teams?.length || 0, 'teams');
-        setTeams(data.teams || []);
-        console.log('Teams loaded successfully');
+        
+        // Fetch full squad data for each team
+        const teamsWithSquads = await Promise.all(
+          (data.teams || []).map(async (team) => {
+            try {
+              console.log(`Fetching squad for ${team.name}...`);
+              
+              // Try different season approaches for individual teams too
+              let teamResponse;
+              
+              // First try: no season parameter
+              teamResponse = await fetch(`${baseUrl}/teams/${team.id}`);
+              
+              if (!teamResponse.ok) {
+                // Second try: with 2024 season
+                teamResponse = await fetch(`${baseUrl}/teams/${team.id}?season=2024`);
+              }
+              
+              if (!teamResponse.ok) {
+                // Third try: with 2023 season
+                teamResponse = await fetch(`${baseUrl}/teams/${team.id}?season=2023`);
+              }
+              
+              if (teamResponse.ok) {
+                const teamData = await teamResponse.json();
+                console.log(`✓ Loaded squad for ${team.name}: ${teamData.squad?.length || 0} players`);
+                return { ...team, squad: teamData.squad || [] };
+              } else {
+                console.warn(`✗ Failed to fetch squad for ${team.name}, using basic data`);
+                return team;
+              }
+            } catch (error) {
+              console.warn(`✗ Error fetching squad for ${team.name}:`, error);
+              return team;
+            }
+          })
+        );
+        
+        setTeams(teamsWithSquads);
+        console.log('All teams loaded with squad data');
       } catch (e) {
         console.error("Failed to fetch from API, trying local file:", e);
         // If API fails, try to fetch from local file
@@ -81,7 +97,6 @@ export default function TeamSelection({ onTeamSelected }) {
           const data = await response.json();
           setTeams(data.teams || []);
           setError(null); // Clear error if local file succeeds
-          console.log('Loaded teams from local file');
         } catch (localError) {
           setError("Failed to load teams data");
           console.error("Failed to fetch from local file:", localError);
@@ -102,8 +117,9 @@ export default function TeamSelection({ onTeamSelected }) {
     setError(null);
 
     try {
+      const baseUrl = process.env.NODE_ENV === 'production' ? '/api/v4' : '';
       const currentSeason = '2024';
-      const response = await fetch(`/api/v4/teams/${selectedTeamId}?season=${currentSeason}`);
+      const response = await fetch(`${baseUrl}/teams/${selectedTeamId}?season=${currentSeason}`);
       let teamData;
 
       if (response.ok) {

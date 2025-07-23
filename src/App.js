@@ -42,7 +42,7 @@ function AppContent() {
   */
 
   // Effect to load data from session and apply overrides once local stats are ready
-  useEffect(() => {
+  npm install  useEffect(() => {
     const savedSelection = sessionStorage.getItem('selectionData');
     if (savedSelection) {
       try {

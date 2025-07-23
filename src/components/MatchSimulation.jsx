@@ -1,195 +1,297 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './MatchSimulation.css';
 
-// Helper per ottenere il cognome
-const getLastName = (fullName) => {
-  if (!fullName) return '';
-  const parts = fullName.split(' ');
-  return parts.length > 1 ? parts[parts.length - 1] : fullName;
-};
+// --- Helper Functions ---
 
-// Motore di simulazione avanzato
-const runSimulation = (selectionData, opponentTeam) => {
-  const events = [];
-  const playerTeam = selectionData.team;
-  const style = selectionData.style;
-  const lineupPlayers = Object.values(selectionData.lineup).filter(p => p); // Filtra eventuali slot vuoti
-
-  // Filtra giocatori per ruolo per azioni più realistiche
-  const forwards = lineupPlayers.filter(p => p.position === 'Attack');
-  const midfielders = lineupPlayers.filter(p => p.position === 'Midfield');
-  const defenders = lineupPlayers.filter(p => p.position === 'Defence');
-
-  const playerStrength = playerTeam.strength || 75;
-  const opponentStrength = opponentTeam.strength || 70;
-
-  let playerGoals = 0;
-  let opponentGoals = 0;
-
-  // Modificatori basati sullo stile di gioco
-  let eventProbabilityModifier = 1.0;
-  let goalConversionModifier = 1.0;
-
-  switch (style) {
-    case 'tiki-taka':
-      eventProbabilityModifier = 1.2; // Più azioni
-      goalConversionModifier = 0.9;   // Meno cinismo, più possesso
+const calculatePlayerRating = (player) => {
+  if (!player) return 0;
+  // In a real app, this would be a complex calculation based on player attributes.
+  if (player.rating) {
+    return player.rating;
+  }
+  // Create a pseudo-rating based on position for more variety
+  let baseRating = 50;
+  switch (player.position) {
+    case 'Goalkeeper':
+      baseRating = 75;
       break;
-    case 'contropiede':
-      eventProbabilityModifier = 0.8; // Meno azioni, ma più letali
-      goalConversionModifier = 1.3;
+    case 'Defender':
+      baseRating = 70;
       break;
-    case 'pressing-alto':
-      eventProbabilityModifier = 1.3; // Tante occasioni create e subite
+    case 'Midfielder':
+      baseRating = 75;
+      break;
+    case 'Attacker':
+      baseRating = 80;
       break;
     default:
-      break;
+      baseRating = 60;
   }
-
-  for (let minute = 1; minute <= 90; minute++) {
-    if (Math.random() < (0.1 * eventProbabilityModifier)) {
-      const isPlayerTeamEvent = Math.random() < (playerStrength / (playerStrength + opponentStrength));
-      const teamEvent = isPlayerTeamEvent ? playerTeam : opponentTeam;
-      
-      let playerInvolved = null;
-      if (isPlayerTeamEvent) {
-        if (lineupPlayers.length > 0) {
-          const actionRoll = Math.random();
-          if (actionRoll < 0.6 && forwards.length > 0) {
-            playerInvolved = forwards[Math.floor(Math.random() * forwards.length)];
-          } else if (actionRoll < 0.9 && midfielders.length > 0) {
-            playerInvolved = midfielders[Math.floor(Math.random() * midfielders.length)];
-          } else {
-            playerInvolved = lineupPlayers[Math.floor(Math.random() * lineupPlayers.length)];
-          }
-        }
-      } else {
-        if (opponentTeam.squad && opponentTeam.squad.length > 0) {
-          playerInvolved = opponentTeam.squad[Math.floor(Math.random() * opponentTeam.squad.length)];
-        }
-      }
-
-      const eventTypeRoll = Math.random();
-      let eventType = 'Tiro fuori';
-      if (eventTypeRoll < (0.15 * (isPlayerTeamEvent ? goalConversionModifier : 1.0))) {
-        eventType = 'GOL!';
-        isPlayerTeamEvent ? playerGoals++ : opponentGoals++;
-      } else if (eventTypeRoll < 0.5) {
-        eventType = 'Tiro in porta';
-      }
-
-      events.push({ 
-        minute,
-        team: teamEvent.name,
-        teamCrest: teamEvent.crest,
-        type: eventType,
-        player: playerInvolved ? getLastName(playerInvolved.name) : '',
-        score: `${playerGoals} - ${opponentGoals}`
-      });
-    }
-  }
-  return events;
+  // Add some randomness
+  return Math.floor(baseRating + Math.random() * 10);
 };
 
-const MatchSimulation = ({ selectionData, onMatchEnd, isSeasonMatch }) => {
-  const [events, setEvents] = useState([]);
-  const [visibleEvents, setVisibleEvents] = useState([]);
-  const [simulationFinished, setSimulationFinished] = useState(false);
+const generateOpponentLineup = (squad) => {
+  if (!Array.isArray(squad) || squad.length < 11) {
+    const safeSquad = Array.isArray(squad) ? squad : [];
+    return { starters: safeSquad.slice(0, 11), subs: safeSquad.slice(11) };
+  }
 
-  const { team: userTeam, currentMatch } = selectionData;
-  const isSeasonGame = isSeasonMatch && currentMatch;
+  const formations = {
+    '4-4-2': { D: 4, M: 4, A: 2 },
+    '4-3-3': { D: 4, M: 3, A: 3 },
+    '3-5-2': { D: 3, M: 5, A: 2 },
+    '4-5-1': { D: 4, M: 5, A: 1 },
+  };
 
-  const homeTeam = isSeasonGame ? currentMatch.home : userTeam;
-  const awayTeam = isSeasonGame ? currentMatch.away : { name: 'Avversario FC', crest: 'https://via.placeholder.com/20', strength: 70 };
-  const opponentTeam = homeTeam.id === userTeam.id ? awayTeam : homeTeam;
+  const getRole = (position) => {
+    if (!position) return 'Midfielder';
+    const pos = position.toLowerCase();
+    if (pos.includes('keeper')) return 'Goalkeeper';
+    if (pos.includes('back') || pos.includes('defender')) return 'Defender';
+    if (pos.includes('midfield') || pos.includes('winger')) return 'Midfielder';
+    if (pos.includes('forward') || pos.includes('striker') || pos.includes('attacker')) return 'Attacker';
+    return 'Midfielder';
+  };
 
-  useEffect(() => {
-    const allEvents = runSimulation(selectionData, opponentTeam);
-    setEvents(allEvents);
-  }, [selectionData, opponentTeam]);
+  const goalkeepers = squad.filter(p => getRole(p.position) === 'Goalkeeper').sort((a, b) => calculatePlayerRating(b) - calculatePlayerRating(a));
+  const defenders = squad.filter(p => getRole(p.position) === 'Defender').sort((a, b) => calculatePlayerRating(b) - calculatePlayerRating(a));
+  const midfielders = squad.filter(p => getRole(p.position) === 'Midfielder').sort((a, b) => calculatePlayerRating(b) - calculatePlayerRating(a));
+  const attackers = squad.filter(p => getRole(p.position) === 'Attacker').sort((a, b) => calculatePlayerRating(b) - calculatePlayerRating(a));
 
-  useEffect(() => {
-    if (events.length > 0) {
-      const interval = setInterval(() => {
-        setVisibleEvents(prev => {
-          if (prev.length < events.length) {
-            return [...prev, events[prev.length]];
-          } else {
-            clearInterval(interval);
-            setSimulationFinished(true);
-            return prev;
-          }
-        });
-      }, 1000);
-      return () => clearInterval(interval);
+  let maxStrength = -1;
+  let bestFormationStarters = [];
+
+  for (const [name, counts] of Object.entries(formations)) {
+    if (goalkeepers.length >= 1 && defenders.length >= counts.D && midfielders.length >= counts.M && attackers.length >= counts.A) {
+      const currentStarters = [
+        ...goalkeepers.slice(0, 1),
+        ...defenders.slice(0, counts.D),
+        ...midfielders.slice(0, counts.M),
+        ...attackers.slice(0, counts.A)
+      ];
+      const currentStrength = currentStarters.reduce((acc, p) => acc + calculatePlayerRating(p), 0);
+      if (currentStrength > maxStrength) {
+        maxStrength = currentStrength;
+        bestFormationStarters = currentStarters;
+      }
     }
-  }, [events]);
+  }
 
-  const lastEvent = events.length > 0 ? events[events.length - 1] : null;
-  const finalScoreString = lastEvent ? lastEvent.score : '0 - 0';
-  const [playerGoals, opponentGoals] = finalScoreString.split(' - ').map(Number);
+  let starters = [];
+  if (bestFormationStarters.length === 11) {
+    starters = bestFormationStarters;
+  } else {
+    // Fallback logic for unbalanced squads
+    const gk = goalkeepers.slice(0, 1);
+    const coreDef = defenders.slice(0, 3);
+    const coreMid = midfielders.slice(0, 3);
+    const coreAtt = attackers.slice(0, 2);
+    
+    const coreTeam = [...gk, ...coreDef, ...coreMid, ...coreAtt];
+    const coreTeamIds = new Set(coreTeam.map(p => p.id));
+    
+    const remainingPlayers = squad.filter(p => !coreTeamIds.has(p.id))
+      .sort((a, b) => calculatePlayerRating(b) - calculatePlayerRating(a));
+      
+    const slotsToFill = 11 - coreTeam.length;
+    starters = [...coreTeam, ...remainingPlayers.slice(0, slotsToFill)];
+  }
 
-  const isUserHome = homeTeam.id === userTeam.id;
-  const homeScore = isUserHome ? playerGoals : opponentGoals;
-  const awayScore = isUserHome ? opponentGoals : playerGoals;
+  const starterIds = new Set(starters.map(p => p.id));
+  const subs = squad.filter(p => p && !starterIds.has(p.id));
 
-  const handleEnd = () => {
-    if (!isSeasonGame) {
-      onMatchEnd();
+  return { starters, subs };
+};
+
+// --- Helper Components ---
+
+const TeamSheet = ({ team, lineup }) => {
+  const starters = lineup?.titolari || lineup?.starters || [];
+  const subs = lineup?.panchina || lineup?.subs || [];
+
+  return (
+    <div className="team-sheet">
+      <h3>{team.name}</h3>
+      <h4>Titolari</h4>
+      <ul>
+        {starters.map(p => p && p.id ? <li key={p.id}>{p.name} <span className="player-pos">({p.position})</span></li> : null)}
+      </ul>
+      <h4>Panchina</h4>
+      <ul>
+        {subs.map(p => p && p.id ? <li key={p.id}>{p.name} <span className="player-pos">({p.position})</span></li> : null)}
+      </ul>
+    </div>
+  );
+};
+
+const Scoreboard = ({ homeTeam, awayTeam, score, time }) => (
+  <div className="scoreboard">
+    <span className="team-name">{homeTeam.name}</span>
+    <img src={homeTeam.crest} alt={`${homeTeam.name} crest`} className="team-crest" />
+    <span className="score">{time}' | {score.home} - {score.away}</span>
+    <img src={awayTeam.crest} alt={`${awayTeam.name} crest`} className="team-crest" />
+    <span className="team-name">{awayTeam.name}</span>
+  </div>
+);
+
+const EventLog = ({ events }) => (
+  <div className="event-log">
+    {events.map((event, index) => (
+      <div key={index} className={`event-item ${event.type === 'GOL!' ? 'goal' : ''}`}>
+        <span className="event-time">{event.time}'</span>
+        <img src={event.team.crest} alt="team crest" className="event-crest" />
+        <span className="event-type">{event.type}</span>
+        {event.player && <span className="event-player">- {event.player.name}</span>}
+      </div>
+    ))}
+  </div>
+);
+
+// --- Main Component ---
+
+const MatchSimulation = ({ matchData, lineupData, userTeam, onMatchEnd }) => {
+  const [events, setEvents] = useState([]);
+  const [time, setTime] = useState(0);
+  const [score, setScore] = useState({ home: 0, away: 0 });
+  const [isMatchFinished, setIsMatchFinished] = useState(false);
+  const [opponentLineup, setOpponentLineup] = useState(null);
+
+  // Verifica che la squadra avversaria sia sempre quella specificata nel calendario
+  const opponentTeam = useMemo(() => {
+    if (!matchData || !userTeam) return null;
+    
+    // Verifica che i dati della partita siano validi
+    if (!matchData.home || !matchData.away || !matchData.id) {
+      console.error('Dati della partita non validi:', matchData);
+      return null;
+    }
+
+    // Verifica che le squadre siano diverse
+    if (matchData.home.id === matchData.away.id) {
+      console.error('Errore: le squadre sono identiche');
+      return null;
+    }
+
+    // Verifica se l'utente è la squadra di casa o di fuori
+    const isHome = matchData.home.id === userTeam.id;
+    const opponent = isHome ? matchData.away : matchData.home;
+    
+    // Verifica che la squadra avversaria sia valida
+    if (!opponent || !opponent.squad) {
+      console.error('Squadra avversaria non valida:', opponent);
+      return null;
+    }
+
+    // Verifica che l'ID della squadra sia corretto
+    if (opponent.id !== (isHome ? matchData.away.id : matchData.home.id)) {
+      console.error('Discrepanza nell\'ID della squadra avversaria');
+      return null;
+    }
+
+    return opponent;
+  }, [matchData, userTeam]);
+
+  useEffect(() => {
+    if (opponentTeam && !opponentLineup) {
+      // Se l'avversario ha già una formazione (titolari/panchina), usala.
+      // Altrimenti, genera una formazione casuale dalla sua rosa.
+      if (opponentTeam.titolari && opponentTeam.panchina) {
+        setOpponentLineup({ starters: opponentTeam.titolari, subs: opponentTeam.panchina });
+      } else if (opponentTeam.squad) {
+        setOpponentLineup(generateOpponentLineup(opponentTeam.squad));
+      }
+    }
+  }, [opponentTeam, opponentLineup]);
+
+  useEffect(() => {
+    if (!matchData?.home?.id || !matchData?.away?.id || !lineupData || !userTeam?.id || !opponentLineup) {
       return;
     }
 
-    let winner = null;
-    if (homeScore > awayScore) winner = homeTeam.id;
-    else if (awayScore > homeScore) winner = awayTeam.id;
+    const { home: homeTeam, away: awayTeam } = matchData;
 
-    onMatchEnd({
-      home: homeTeam,
-      away: awayTeam,
-      homeScore,
-      awayScore,
-      winner,
-    });
+    const getPlayerForEvent = (team, isGoalAttempt = false) => {
+      const isUser = team.id === userTeam.id;
+      const currentLineup = isUser ? lineupData : opponentLineup;
+      const starters = (isUser ? currentLineup.titolari : currentLineup.starters) || [];
+
+      if (starters.length === 0) return { name: 'un giocatore', id: `fallback-${Date.now()}` };
+
+      if (isGoalAttempt) {
+        const attackers = starters.filter(p => p && p.position === 'Attacker');
+        const midfielders = starters.filter(p => p && p.position === 'Midfielder');
+        const chancePool = [];
+        attackers.forEach(p => { for(let i=0; i<4; i++) chancePool.push(p) }); // 4x chance for attackers
+        midfielders.forEach(p => chancePool.push(p)); // 1x chance
+
+        if (chancePool.length > 0) {
+          return chancePool[Math.floor(Math.random() * chancePool.length)];
+        }
+      }
+      return starters[Math.floor(Math.random() * starters.length)];
+    };
+
+    const matchInterval = setInterval(() => {
+      setTime(prevTime => {
+        if (prevTime >= 90) {
+          clearInterval(matchInterval);
+          setIsMatchFinished(true);
+          return 90;
+        }
+
+        const newTime = prevTime + 1;
+        const rand = Math.random();
+
+        if (rand < 0.05) {
+          const eventTypeRand = Math.random();
+          const attackingTeam = rand < 0.025 ? homeTeam : awayTeam;
+          const isGoalAttempt = eventTypeRand < 0.5;
+          const player = getPlayerForEvent(attackingTeam, isGoalAttempt);
+
+          let event = { time: newTime, team: attackingTeam, player };
+
+          if (eventTypeRand < 0.15) {
+            event.type = 'GOL!';
+            setScore(s => (attackingTeam.id === homeTeam.id ? { ...s, home: s.home + 1 } : { ...s, away: s.away + 1 }));
+          } else if (eventTypeRand < 0.5) {
+            event.type = 'Tiro in porta';
+          } else {
+            event.type = 'Tiro fuori';
+          }
+          setEvents(prev => [event, ...prev]);
+        }
+
+        return newTime;
+      });
+    }, 200);
+
+    return () => clearInterval(matchInterval);
+  }, [matchData, lineupData, userTeam, opponentLineup]);
+
+  const handleFinishMatch = () => {
+    onMatchEnd({ ...matchData, result: score });
   };
+
+  if (!matchData?.home?.id || !opponentLineup) {
+    return <div>Caricamento dati partita...</div>;
+  }
+
+  const { home: homeTeam, away: awayTeam } = matchData;
+  const userLineup = lineupData;
+  const oppLineup = opponentLineup;
 
   return (
     <div className="match-simulation-container">
-      <div className="scoreboard">
-        <div className="team-info">
-          <img src={homeTeam.crest} alt={homeTeam.name} className="team-crest" />
-          <span className="team-name">{homeTeam.name}</span>
+      <div className="match-simulation">
+        <TeamSheet team={homeTeam} lineup={homeTeam.id === userTeam.id ? userLineup : oppLineup} />
+        <div className="match-center-column">
+          <Scoreboard homeTeam={homeTeam} awayTeam={awayTeam} score={score} time={time} />
+          <EventLog events={events} />
+          {isMatchFinished && <button onClick={handleFinishMatch} className="action-button">Termina e Torna alla Stagione</button>}
         </div>
-        <div className="score">{simulationFinished ? `${homeScore} - ${awayScore}` : '...'}</div>
-        <div className="team-info">
-          <span className="team-name">{awayTeam.name}</span>
-          <img src={awayTeam.crest} alt={awayTeam.name} className="team-crest" />
-        </div>
+        <TeamSheet team={awayTeam} lineup={awayTeam.id === userTeam.id ? userLineup : oppLineup} />
       </div>
-
-      <div className="timeline-container">
-        {visibleEvents.map((event, index) => (
-          <div key={index} className="timeline-event">
-            <div className="event-minute">{event.minute}'</div>
-            <div className="event-details">
-              <img src={event.teamCrest} alt={event.team} className="event-team-crest" />
-              <div>
-                <span className={`event-type ${event.type === 'GOL!' ? 'goal' : ''}`}>{event.type}</span>
-                {event.player && <span className="event-player"> - {event.player}</span>}
-              </div>
-            </div>
-            <div className="event-score">{event.score}</div>
-          </div>
-        ))}
-        {simulationFinished && <div className="match-end-message">Partita terminata!</div>}
-      </div>
-
-      {simulationFinished && (
-        <div className="match-end-actions">
-          <button onClick={handleEnd} className="action-button">
-            {isSeasonGame ? 'Torna al Campionato' : 'Torna alla Dashboard'}
-          </button>
-        </div>
-      )}
     </div>
   );
 };

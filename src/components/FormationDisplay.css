@@ -1,0 +1,264 @@
+.lineup-selection {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+  gap: 20px;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.formation-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.lineup-team-name {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.lineup-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.control-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.auto-button {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.clear-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.back-button {
+  background-color: #9e9e9e;
+  color: white;
+}
+
+.save-button {
+  background-color: #2196F3;
+  color: white;
+}
+
+.control-button:hover {
+  opacity: 0.9;
+}
+
+.main-content {
+  display: flex;
+  gap: 20px;
+  height: calc(100% - 60px);
+}
+
+.player-list-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 300px;
+}
+
+.player-list-panel h2 {
+  margin: 0;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.player-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  min-height: 200px;
+}
+
+.player-card {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer; /* Changed from grab to pointer */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.player-role {
+  background-color: #2196F3;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.player-info {
+  flex: 1;
+}
+
+.player-name {
+  margin: 0;
+  font-weight: bold;
+}
+
+.player-rating {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.field {
+  flex: 2;
+  background: linear-gradient(to bottom, #4CAF50, #388E3C);
+  position: relative;
+  border-radius: 10px;
+  min-height: 600px;
+}
+
+.formation-title {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0,0,0,0.7);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.position-slot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.empty-position {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: rgba(255,255,255,0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.8em;
+}
+
+.player-token {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  background-color: #2c3e50;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 10px;
+  border: 2px solid #FFD700; /* Default 'natural' border */
+  cursor: grab;
+  transition: transform 0.2s ease, border-color 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.player-token.adapted {
+  border-color: #f1c40f; /* Yellow for adapted */
+}
+
+.player-token.out-of-position {
+  border-color: #e74c3c; /* Red for out-of-position */
+}
+
+.player-token .player-name {
+  color: #000000; /* Black text for player names on the field */
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 2px 4px;
+  border-radius: 3px;
+  width: 90%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bench-drop-zone {
+  padding: 15px;
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  text-align: center;
+  margin-bottom: 10px;
+  cursor: pointer;
+  color: #666;
+  font-weight: bold;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.bench-drop-zone:hover {
+  background-color: #e8f5e9; /* Light green on hover */
+  border-color: #4CAF50;
+}
+
+.player-card.selected,
+.player-token.selected {
+  border-color: #3498db !important; /* Bright blue to indicate selection */
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(52, 152, 219, 0.8);
+}
+
+.player-token-name {
+  font-weight: bold;
+  font-size: 0.8em;
+  margin-bottom: 2px;
+  color: black;
+}
+
+.player-token-rating {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.player-token-position {
+  font-size: 0.8em;
+  background-color: #2196F3;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 2px;
+}
+
+.dragging-over {
+  background-color: rgba(255,255,255,0.2);
+}
+
+.is-dragging {
+  opacity: 0.5;
+} 

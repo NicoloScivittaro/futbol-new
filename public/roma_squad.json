@@ -1,0 +1,142 @@
+{
+  "id": 100,
+  "name": "AS Roma",
+  "shortName": "Roma",
+  "tla": "ROM",
+  "crest": "https://crests.football-data.org/100.svg",
+  "squad": [
+    {
+      "id": 3186,
+      "name": "Rui Patrício",
+      "position": "Goalkeeper",
+      "dateOfBirth": "1988-02-15",
+      "nationality": "Portugal"
+    },
+    {
+      "id": 180343,
+      "name": "Mile Svilar",
+      "position": "Goalkeeper",
+      "dateOfBirth": "1999-08-27",
+      "nationality": "Serbia"
+    },
+    {
+      "id": 3323,
+      "name": "Gianluca Mancini",
+      "position": "Defence",
+      "dateOfBirth": "1996-04-17",
+      "nationality": "Italy"
+    },
+    {
+      "id": 7989,
+      "name": "Chris Smalling",
+      "position": "Defence",
+      "dateOfBirth": "1989-11-22",
+      "nationality": "England"
+    },
+    {
+      "id": 127988,
+      "name": "Evan Ndicka",
+      "position": "Defence",
+      "dateOfBirth": "1999-08-20",
+      "nationality": "Cote d'Ivoire"
+    },
+    {
+      "id": 135157,
+      "name": "Marash Kumbulla",
+      "position": "Defence",
+      "dateOfBirth": "2000-02-08",
+      "nationality": "Albania"
+    },
+    {
+      "id": 9979,
+      "name": "Leonardo Spinazzola",
+      "position": "Defence",
+      "dateOfBirth": "1993-03-25",
+      "nationality": "Italy"
+    },
+    {
+      "id": 159995,
+      "name": "Rasmus Kristensen",
+      "position": "Defence",
+      "dateOfBirth": "1997-07-11",
+      "nationality": "Denmark"
+    },
+    {
+      "id": 3321,
+      "name": "Bryan Cristante",
+      "position": "Midfield",
+      "dateOfBirth": "1995-03-03",
+      "nationality": "Italy"
+    },
+    {
+      "id": 3336,
+      "name": "Lorenzo Pellegrini",
+      "position": "Midfield",
+      "dateOfBirth": "1996-06-19",
+      "nationality": "Italy"
+    },
+    {
+      "id": 8188,
+      "name": "Leandro Paredes",
+      "position": "Midfield",
+      "dateOfBirth": "1994-06-29",
+      "nationality": "Argentina"
+    },
+    {
+      "id": 16966,
+      "name": "Renato Sanches",
+      "position": "Midfield",
+      "dateOfBirth": "1997-08-18",
+      "nationality": "Portugal"
+    },
+    {
+      "id": 95420,
+      "name": "Houssem Aouar",
+      "position": "Midfield",
+      "dateOfBirth": "1998-06-30",
+      "nationality": "Algeria"
+    },
+    {
+      "id": 171549,
+      "name": "Edoardo Bove",
+      "position": "Midfield",
+      "dateOfBirth": "2002-05-16",
+      "nationality": "Italy"
+    },
+    {
+      "id": 3184,
+      "name": "Paulo Dybala",
+      "position": "Attack",
+      "dateOfBirth": "1993-11-15",
+      "nationality": "Argentina"
+    },
+    {
+      "id": 3328,
+      "name": "Andrea Belotti",
+      "position": "Attack",
+      "dateOfBirth": "1993-12-20",
+      "nationality": "Italy"
+    },
+    {
+      "id": 7855,
+      "name": "Romelu Lukaku",
+      "position": "Attack",
+      "dateOfBirth": "1993-05-13",
+      "nationality": "Belgium"
+    },
+    {
+      "id": 8464,
+      "name": "Sardar Azmoun",
+      "position": "Attack",
+      "dateOfBirth": "1995-01-01",
+      "nationality": "Iran"
+    },
+    {
+      "id": 3189,
+      "name": "Stephan El Shaarawy",
+      "position": "Attack",
+      "dateOfBirth": "1992-10-27",
+      "nationality": "Italy"
+    }
+  ]
+}

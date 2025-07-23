@@ -1,200 +1,327 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import './LineupSelection.css';
+import FormationDisplay from './FormationDisplay';
 
-const getPositionsForTactic = (tactic) => {
-  const layouts = {
-    '4-3-3': [
+const FORMATIONS = {
+  '4-3-3': {
+    name: '4-3-3',
+    positions: [
       { role: 'goalkeeper', top: '92%', left: '50%' },
-      { role: 'defender', top: '75%', left: '20%' }, { role: 'defender', top: '75%', left: '40%' }, { role: 'defender', top: '75%', left: '60%' }, { role: 'defender', top: '75%', left: '80%' },
-      { role: 'midfielder', top: '50%', left: '25%' }, { role: 'midfielder', top: '50%', left: '50%' }, { role: 'midfielder', top: '50%', left: '75%' },
-      { role: 'forward', top: '25%', left: '20%' }, { role: 'forward', top: '25%', left: '50%' }, { role: 'forward', top: '25%', left: '80%' },
-    ],
-    '3-5-2': [
-        { role: 'goalkeeper', top: '92%', left: '50%' },
-        { role: 'defender', top: '75%', left: '25%' }, { role: 'defender', top: '75%', left: '50%' }, { role: 'defender', top: '75%', left: '75%' },
-        { role: 'midfielder', top: '55%', left: '15%' }, { role: 'midfielder', top: '50%', left: '35%' }, { role: 'midfielder', top: '45%', left: '50%' }, { role: 'midfielder', top: '50%', left: '65%' }, { role: 'midfielder', top: '55%', left: '85%' },
-        { role: 'forward', top: '25%', left: '40%' }, { role: 'forward', top: '25%', left: '60%' },
-    ],
-    '4-4-2': [
-        { role: 'goalkeeper', top: '92%', left: '50%' },
-        { role: 'defender', top: '75%', left: '20%' }, { role: 'defender', top: '75%', left: '40%' }, { role: 'defender', top: '75%', left: '60%' }, { role: 'defender', top: '75%', left: '80%' },
-        { role: 'midfielder', top: '50%', left: '20%' }, { role: 'midfielder', top: '50%', left: '40%' }, { role: 'midfielder', top: '50%', left: '60%' }, { role: 'midfielder', top: '50%', left: '80%' },
-        { role: 'forward', top: '25%', left: '40%' }, { role: 'forward', top: '25%', left: '60%' },
-    ],
-    '4-2-3-1': [
-        { role: 'goalkeeper', top: '92%', left: '50%' },
-        { role: 'defender', top: '75%', left: '20%' }, { role: 'defender', top: '75%', left: '40%' }, { role: 'defender', top: '75%', left: '60%' }, { role: 'defender', top: '75%', left: '80%' },
-        { role: 'midfielder', top: '60%', left: '35%' }, { role: 'midfielder', top: '60%', left: '65%' }, // 2 MC
-        { role: 'attacking-midfielder', top: '45%', left: '25%' }, { role: 'attacking-midfielder', top: '40%', left: '50%' }, { role: 'attacking-midfielder', top: '45%', left: '75%' }, // 3 COC
-        { role: 'forward', top: '20%', left: '50%' }, // 1 ATT
-    ],
-  };
-  return layouts[tactic] || layouts['4-3-3'];
+      { role: 'defender', top: '75%', left: '15%' },
+      { role: 'defender', top: '75%', left: '38%' },
+      { role: 'defender', top: '75%', left: '62%' },
+      { role: 'defender', top: '75%', left: '85%' },
+      { role: 'midfielder', top: '50%', left: '30%' },
+      { role: 'midfielder', top: '45%', left: '50%' },
+      { role: 'midfielder', top: '50%', left: '70%' },
+      { role: 'forward', top: '25%', left: '30%' },
+      { role: 'forward', top: '20%', left: '50%' },
+      { role: 'forward', top: '25%', left: '70%' }
+    ]
+  },
+  '4-4-2': {
+    name: '4-4-2',
+    positions: [
+      { role: 'goalkeeper', top: '92%', left: '50%' },
+      { role: 'defender', top: '75%', left: '15%' },
+      { role: 'defender', top: '75%', left: '38%' },
+      { role: 'defender', top: '75%', left: '62%' },
+      { role: 'defender', top: '75%', left: '85%' },
+      { role: 'midfielder', top: '50%', left: '15%' },
+      { role: 'midfielder', top: '50%', left: '38%' },
+      { role: 'midfielder', top: '50%', left: '62%' },
+      { role: 'midfielder', top: '50%', left: '85%' },
+      { role: 'forward', top: '25%', left: '35%' },
+      { role: 'forward', top: '25%', left: '65%' }
+    ]
+  },
+  '3-5-2': {
+    name: '3-5-2',
+    positions: [
+      { role: 'goalkeeper', top: '92%', left: '50%' },
+      { role: 'defender', top: '75%', left: '30%' },
+      { role: 'defender', top: '75%', left: '50%' },
+      { role: 'defender', top: '75%', left: '70%' },
+      { role: 'midfielder', top: '55%', left: '15%' },
+      { role: 'midfielder', top: '50%', left: '35%' },
+      { role: 'midfielder', top: '45%', left: '50%' },
+      { role: 'midfielder', top: '50%', left: '65%' },
+      { role: 'midfielder', top: '55%', left: '85%' },
+      { role: 'forward', top: '25%', left: '35%' },
+      { role: 'forward', top: '25%', left: '65%' }
+    ]
+  },
+  '4-2-3-1': {
+    name: '4-2-3-1',
+    positions: [
+      { role: 'goalkeeper', top: '92%', left: '50%' },
+      { role: 'defender', top: '75%', left: '15%' },
+      { role: 'defender', top: '75%', left: '38%' },
+      { role: 'defender', top: '75%', left: '62%' },
+      { role: 'defender', top: '75%', left: '85%' },
+      { role: 'midfielder', top: '60%', left: '35%' },
+      { role: 'midfielder', top: '60%', left: '65%' },
+      { role: 'attacking-midfielder', top: '45%', left: '25%' },
+      { role: 'attacking-midfielder', top: '40%', left: '50%' },
+      { role: 'attacking-midfielder', top: '45%', left: '75%' },
+      { role: 'forward', top: '20%', left: '50%' }
+    ]
+  }
 };
 
-const LineupSelection = ({ selectionData, onNext, onBack }) => {
-  const positions = useMemo(() => getPositionsForTactic(selectionData.tactic), [selectionData.tactic]);
-  // Funzione per mappare il ruolo dal dato API a una classe CSS
-  const getRole = (position) => {
-      if (position === 'Goalkeeper') return 'goalkeeper';
-      if (position === 'Defence') return 'defender';
-      if (position === 'Midfield') return 'midfielder';
-      if (position === 'Offence' || position === 'Attack') return 'forward';
-      return 'player'; // Ruolo di fallback
+const getPositionsForTactic = (tactic) => {
+  return FORMATIONS[tactic]?.positions || FORMATIONS['4-3-3'].positions;
+};
+
+const getCanonicalPosition = (apiPosition) => {
+  if (typeof apiPosition !== 'string') return 'midfielder';
+  const pos = apiPosition.toLowerCase();
+
+  if (pos.includes('goal') || pos.includes('portiere')) return 'goalkeeper';
+  if (pos.includes('defen') || pos.includes('back') || pos.includes('difensore') || pos.includes('terzino')) return 'defender';
+  if ((pos.includes('attack') && pos.includes('midfield')) || pos.includes('trequartista') || (pos.includes('centrocampista') && pos.includes('offensivo'))) return 'attacking-midfielder';
+  if (pos.includes('midfield') || pos.includes('centrocampista')) return 'midfielder';
+  if (pos.includes('forward') || pos.includes('attack') || pos.includes('striker') || pos.includes('winger') || pos.includes('attaccante') || pos.includes('ala')) return 'forward';
+
+  return 'midfielder'; // Default to midfielder for unknown roles
+};
+
+const POSITION_COMPATIBILITY = {
+  'goalkeeper': { 'goalkeeper': 1.0 },
+  'defender': { 'defender': 1.0, 'midfielder': 0.8, 'attacking-midfielder': 0.6, 'forward': 0.5 },
+  'midfielder': { 'midfielder': 1.0, 'defender': 0.85, 'attacking-midfielder': 0.9, 'forward': 0.75 },
+  'attacking-midfielder': { 'attacking-midfielder': 1.0, 'midfielder': 0.9, 'forward': 0.85, 'defender': 0.6 },
+  'forward': { 'forward': 1.0, 'attacking-midfielder': 0.85, 'midfielder': 0.75, 'defender': 0.5 },
+};
+
+const LineupSelection = ({ selectionData, onNext, onBack, initialLineup }) => {
+  const [currentFormation, setCurrentFormation] = useState(selectionData?.tactic || '4-3-3');
+  const [formation, setFormation] = useState({ titolari: [], panchina: [], rosaDisponibile: [] });
+  const [selectedPlayerForSwap, setSelectedPlayerForSwap] = useState(null);
+
+  useEffect(() => {
+    const fullSquadRaw = selectionData?.userTeam?.squad || [];
+
+    // De-duplica la rosa basandosi sull'ID del giocatore per evitare errori di chiave
+    const seenIds = new Set();
+    const fullSquad = fullSquadRaw.filter(player => {
+      if (!player || typeof player.id === 'undefined') return false;
+      if (seenIds.has(player.id)) {
+        console.warn(`ID giocatore duplicato rimosso: ${player.id}`);
+        return false;
+      }
+      seenIds.add(player.id);
+      return true;
+    });
+
+    const initialTitolari = initialLineup?.titolari || [];
+    const initialPanchina = initialLineup?.panchina || [];
+    
+    const usedPlayerIds = new Set([
+      ...initialTitolari.map(p => p.id),
+      ...initialPanchina.map(p => p.id)
+    ]);
+
+    const availablePlayers = fullSquad.filter(p => !usedPlayerIds.has(p.id));
+
+    setFormation({
+      titolari: initialTitolari,
+      panchina: initialPanchina,
+      rosaDisponibile: availablePlayers
+    });
+  }, [selectionData, initialLineup]);
+
+  const handlePlayerClick = (player, sourceListName, positionKey) => {
+    // Case 1: No player is selected yet. Select the clicked player.
+    if (!selectedPlayerForSwap) {
+      if (player) {
+        setSelectedPlayerForSwap({ player, source: sourceListName });
+      }
+      return; // Do nothing if an empty slot is clicked first.
+    }
+
+    // Case 2: A player is already selected. Handle the second click.
+    const player1Info = selectedPlayerForSwap;
+
+    // If the user clicks the same player again, deselect it.
+    if (player && player1Info.player.id === player.id) {
+      setSelectedPlayerForSwap(null);
+      return;
+    }
+
+    const newFormation = JSON.parse(JSON.stringify(formation));
+    const sourceList = newFormation[player1Info.source];
+    const sourceIndex = sourceList.findIndex(p => p.id === player1Info.player.id);
+
+    if (sourceIndex === -1) {
+      setSelectedPlayerForSwap(null); // Should not happen
+      return;
+    }
+
+    // Scenario A: Moving a selected player to an empty 'titolari' slot.
+    if (!player && sourceListName === 'titolari') {
+      const playerToMove = sourceList.splice(sourceIndex, 1)[0];
+      playerToMove.fieldPosition = positionKey; // Assign the new position
+      newFormation.titolari.push(playerToMove);
+      setFormation(newFormation);
+      setSelectedPlayerForSwap(null);
+      return;
+    }
+    
+    // Scenario B: Swapping two players.
+    const player2Info = { player, source: sourceListName };
+    const destList = newFormation[player2Info.source];
+    const destIndex = destList.findIndex(p => p.id === player2Info.player.id);
+
+    if (destIndex === -1) {
+      setSelectedPlayerForSwap(null); // Should not happen
+      return;
+    }
+
+    // Perform the swap
+    const p1_data = sourceList[sourceIndex];
+    const p2_data = destList[destIndex];
+    sourceList[sourceIndex] = p2_data;
+    destList[destIndex] = p1_data;
+
+    // Correctly swap or assign fieldPosition for titolari
+    const p1_is_titolare = player1Info.source === 'titolari';
+    const p2_is_titolare = player2Info.source === 'titolari';
+
+    if (p1_is_titolare && p2_is_titolare) {
+      [p1_data.fieldPosition, p2_data.fieldPosition] = [p2_data.fieldPosition, p1_data.fieldPosition];
+    } else if (p1_is_titolare && !p2_is_titolare) {
+      p2_data.fieldPosition = p1_data.fieldPosition;
+      delete p1_data.fieldPosition;
+    } else if (!p1_is_titolare && p2_is_titolare) {
+      p1_data.fieldPosition = p2_data.fieldPosition;
+      delete p2_data.fieldPosition;
+    }
+
+    setFormation(newFormation);
+    setSelectedPlayerForSwap(null); // Reset selection after swap
   };
 
-  // Inizializza i giocatori con il ruolo corretto
-  const initialPlayers = (selectionData.players || []).map(p => ({ ...p, role: getRole(p.position) }));
-
-  const [roster, setRoster] = useState(initialPlayers);
-  const [lineup, setLineup] = useState({}); // Es: { 'goalkeeper-0': player, ... }
-  const [subs, setSubs] = useState([]);
-
-  const handleClearLineup = () => {
-    const playersInLineup = Object.values(lineup);
-    setRoster(prev => [...prev, ...playersInLineup]);
-    setLineup({});
-  };
-
-  const handleAutoFillLineup = () => {
-    const availablePlayers = [...initialPlayers];
-    const newLineup = {};
-
-    const roleToPositionMap = {
-      'goalkeeper': ['Goalkeeper'],
-      'defender': ['Defence'],
-      'midfielder': ['Midfield'],
-      'attacking-midfielder': ['Midfield', 'Attack', 'Offence'],
-      'forward': ['Attack', 'Offence'],
+  const handleAutoFill = () => {
+    // Combine all available players into one list to ensure we consider everyone
+    const allPlayers = [...formation.titolari, ...formation.panchina, ...formation.rosaDisponibile];
+    const playersByRole = {
+      goalkeeper: [],
+      defender: [],
+      midfielder: [],
+      'attacking-midfielder': [],
+      forward: [],
     };
 
-    Object.entries(formationLayout).forEach(([role, positionsInRole]) => {
-      positionsInRole.forEach((_, index) => {
-        const positionKey = `${role}-${index}`;
-        const targetApiPositions = roleToPositionMap[role];
-        
-        let foundPlayerIndex = -1;
-        if (targetApiPositions) {
-          for (const apiPos of targetApiPositions) {
-            foundPlayerIndex = availablePlayers.findIndex(p => p.position === apiPos);
-            if (foundPlayerIndex !== -1) break;
+    // Categorize and sort players by role and overall rating
+    allPlayers.forEach(player => {
+      const role = getCanonicalPosition(player.position);
+      if (playersByRole[role]) {
+        playersByRole[role].push(player);
+      }
+    });
+
+    // Sort each role group by overall descending
+    for (const role in playersByRole) {
+      playersByRole[role].sort((a, b) => (b.overall || 0) - (a.overall || 0));
+    }
+
+    const newTitolari = [];
+    const formationSlots = FORMATIONS[currentFormation].positions;
+
+    // Create a copy of the sorted players to draw from
+    const availablePlayers = JSON.parse(JSON.stringify(playersByRole));
+
+    formationSlots.forEach((slot, index) => {
+      const role = slot.role;
+      let playerToAssign = null;
+
+      // Find the best available player for the role
+      if (availablePlayers[role] && availablePlayers[role].length > 0) {
+        playerToAssign = availablePlayers[role].shift();
+      } else {
+        // If no player for the specific role, try to find a compatible one from other roles
+        // This is a simple fallback, could be improved with compatibility scores
+        const fallbackRoles = ['forward', 'attacking-midfielder', 'midfielder', 'defender'];
+        for (const fallbackRole of fallbackRoles) {
+          if (availablePlayers[fallbackRole] && availablePlayers[fallbackRole].length > 0) {
+            playerToAssign = availablePlayers[fallbackRole].shift();
+            break;
           }
         }
+      }
 
-        if (foundPlayerIndex !== -1) {
-          const playerToAssign = availablePlayers.splice(foundPlayerIndex, 1)[0];
-          newLineup[positionKey] = playerToAssign;
-        }
-      });
+      if (playerToAssign) {
+        playerToAssign.fieldPosition = `${role}-${index}`;
+        newTitolari.push(playerToAssign);
+      }
     });
 
-    setLineup(newLineup);
-    setRoster(availablePlayers);
-    setSubs([]);
-  };
+    // Remaining players go to the bench or available list
+    const remainingPlayers = Object.values(availablePlayers).flat();
+    remainingPlayers.sort((a, b) => (b.overall || 0) - (a.overall || 0));
 
-  const handleDragStart = (e, player) => {
-    e.dataTransfer.setData('player', JSON.stringify(player));
-  };
+    const newPanchina = remainingPlayers.slice(0, 12); // Max 12 on bench
+    const newRosaDisponibile = remainingPlayers.slice(12);
 
-  const handleDrop = (e, area, positionKey) => {
-    e.preventDefault();
-    const playerData = JSON.parse(e.dataTransfer.getData('player'));
-    const player = { ...playerData };
-
-    // Rimuove il giocatore da tutte le liste per evitare duplicati
-    setRoster(prev => prev.filter(p => p.id !== player.id));
-    setSubs(prev => prev.filter(p => p.id !== player.id));
-    const newLineup = { ...lineup };
-    Object.keys(newLineup).forEach(key => {
-        if (newLineup[key] && newLineup[key].id === player.id) {
-            delete newLineup[key];
-        }
+    setFormation({
+      titolari: newTitolari,
+      panchina: newPanchina,
+      rosaDisponibile: newRosaDisponibile,
     });
+  };
 
-    if (area === 'lineup') {
-        // Se la posizione era occupata, sposta il vecchio giocatore nella rosa
-        if(newLineup[positionKey]) {
-            setRoster(prev => [...prev, newLineup[positionKey]]);
-        }
-        newLineup[positionKey] = player;
-        setLineup(newLineup);
-    } else if (area === 'subs') {
-        setSubs(prev => [...prev, player]);
-    } else if (area === 'roster') {
-        setRoster(prev => [...prev, player]);
+  const handleClear = () => {
+    const allPlayers = [...formation.titolari, ...formation.panchina, ...formation.rosaDisponibile];
+    setFormation({
+      titolari: [],
+      panchina: [],
+      rosaDisponibile: allPlayers
+    });
+  };
+
+  const handleSave = () => {
+    if (formation.titolari.length !== 11) {
+      alert('Devi selezionare 11 giocatori titolari!');
+      return;
     }
+    onNext({ 
+      formation: currentFormation,
+      titolari: formation.titolari,
+      panchina: formation.panchina
+    });
   };
 
-  const allowDrop = (e) => {
-    e.preventDefault();
+  const calculatePlayerRating = (player, fieldRole) => {
+    if (!player) return 0;
+    const baseRating = player.overall || 70;
+    const playerRole = getCanonicalPosition(player.position);
+    const compatibility = POSITION_COMPATIBILITY[playerRole]?.[fieldRole] || 0.5; // Default to 50% penalty if no compatibility is found
+    return Math.round(baseRating * compatibility);
   };
 
-  const renderPosition = (role, pos, index) => {
-    const key = `${role}-${index}`;
-    const playerInPosition = lineup[key];
-    return (
-        <div 
-            key={key} 
-            className="player-position" 
-            style={{ top: pos.top, left: pos.left }}
-            onDrop={(e) => handleDrop(e, 'lineup', key)}
-            onDragOver={allowDrop}
-        >
-            {playerInPosition ? (
-                <div className={`player-token ${playerInPosition.role}`} draggable onDragStart={(e) => handleDragStart(e, playerInPosition)}>{playerInPosition.name.substring(0,1)}</div>
-            ) : (
-                <span className="role-indicator">{role.substring(0,3)}</span>
-            )}
-        </div>
-    );
-  }
-
-  const formationLayout = useMemo(() => {
-    return positions.reduce((acc, pos) => {
-        (acc[pos.role] = acc[pos.role] || []).push(pos);
-        return acc;
-    }, {});
-  }, [positions]);
+  const getPositionStatus = (player, fieldRole) => {
+    const playerRole = getCanonicalPosition(player.position);
+    const compatibility = POSITION_COMPATIBILITY[playerRole]?.[fieldRole] || 0.5;
+    if (compatibility === 1.0) return 'natural';
+    if (compatibility >= 0.8) return 'adapted';
+    return 'out-of-position';
+  };
 
   return (
-    <div className="lineup-container">
-        <div className="roster-panel" onDrop={(e) => handleDrop(e, 'roster')} onDragOver={allowDrop}>
-            <h3>Rosa Disponibile</h3>
-            {roster.map(player => (
-                <div key={player.id} className="player-card" draggable onDragStart={(e) => handleDragStart(e, player)}>
-                    <span className="player-name">{player.name}</span>
-                    <span className="player-position-text">{player.position}</span>
-                </div>
-            ))}
-        </div>
-
-        <div className="pitch-container">
-            <div className="pitch-header">
-              <h3>Titolari ({selectionData.tactic || '4-3-3'})</h3>
-              <button onClick={handleAutoFillLineup} className="action-button">Formazione Automatica</button>
-              <button onClick={handleClearLineup} className="action-button clear-button">Svuota Formazione</button>
-              <div className="actions-panel">
-                  <button onClick={onBack} className="action-button back-button">Indietro</button>
-                  <button onClick={() => onNext({ lineup, subs })} className="action-button save-button">Salva Formazione</button>
-              </div>
-            </div>
-            <div className="pitch-display">
-                {Object.entries(formationLayout).map(([role, positions]) => 
-                    positions.map((pos, index) => renderPosition(role, pos, index))
-                )}
-            </div>
-        </div>
-
-        <div className="subs-panel" onDrop={(e) => handleDrop(e, 'subs')} onDragOver={allowDrop}>
-            <h3>Panchina</h3>
-            {subs.map(player => (
-                <div key={player.id} className="player-card" draggable onDragStart={(e) => handleDragStart(e, player)}>
-                    {player.name}
-                </div>
-            ))}
-        </div>
-    </div>
+    <FormationDisplay
+      formation={formation}
+      currentFormation={currentFormation}
+      onPlayerClick={handlePlayerClick}
+      selectedPlayerForSwap={selectedPlayerForSwap}
+      calculatePlayerRating={calculatePlayerRating}
+      getPositionStatus={getPositionStatus}
+      showControls={true}
+      onAutoFill={handleAutoFill}
+      onClear={handleClear}
+      onBack={onBack}
+      onSave={handleSave}
+    />
   );
 };
 

@@ -6,70 +6,108 @@ const STYLES = [
   { id: "pressing-alto", label: "Pressing Alto" },
 ];
 
-export default function TeamSelection({ onNext }) {
+export default function TeamSelection({ onTeamSelected }) {
   const [teams, setTeams] = useState([]);
-  const [selectedTeam, setSelectedTeam] = useState("");
-  const [selectedStyle, setSelectedStyle] = useState("");
   const [loading, setLoading] = useState(true);
-  const [players, setPlayers] = useState([]);
-
-  const API_TOKEN = 'db31d290622d4c84b8f8ad4292e0e5c5';
-  const BASE_URL = '/v4';
+  const [error, setError] = useState(null);
+  const [selectedTeamId, setSelectedTeamId] = useState("");
+  const [selectedStyle, setSelectedStyle] = useState("");
+  const competitionCode = 'SA';
 
   useEffect(() => {
-    // Fetch teams from the Premier League (PL)
-    fetch(`${BASE_URL}/competitions/PL/teams`, {
-      headers: { 'X-Auth-Token': API_TOKEN }
-    })
-      .then(res => {
-        if (!res.ok) {
-          console.error('Failed to fetch teams:', res.status, res.statusText);
-          return res.json().then(err => { throw new Error(err.message) });
+    const fetchTeams = async () => {
+      try {
+        // First try to fetch from the API
+        const response = await fetch(`/competitions/${competitionCode}/teams`);
+        if (!response.ok) {
+          throw new Error(`API error! status: ${response.status}`);
         }
-        return res.json();
-      })
-      .then(data => {
+        const data = await response.json();
         setTeams(data.teams || []);
+      } catch (e) {
+        console.error("Failed to fetch from API, trying local file:", e);
+        // If API fails, try to fetch from local file
+        try {
+          const response = await fetch('/sa_teams.json');
+          if (!response.ok) {
+            throw new Error(`Local file error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          setTeams(data.teams || []);
+          setError(null); // Clear error if local file succeeds
+        } catch (localError) {
+          setError("Failed to load teams data");
+          console.error("Failed to fetch from local file:", localError);
+        }
+      } finally {
         setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching teams:", error);
-        setLoading(false);
-      });
+      }
+    };
+
+    fetchTeams();
   }, []);
 
-  useEffect(() => {
-    if (selectedTeam) {
-      const teamId = parseInt(selectedTeam, 10);
-      if (!isNaN(teamId)) {
-        setPlayers([]); // Reset players while fetching new ones
-        fetch(`${BASE_URL}/teams/${teamId}`, {
-          headers: { 'X-Auth-Token': API_TOKEN }
-        })
-          .then(res => {
-            if (!res.ok) {
-              console.error('Failed to fetch players:', res.status, res.statusText);
-              return res.json().then(err => { throw new Error(err.message) });
-            }
-            return res.json();
-          })
-          .then(data => setPlayers(data.squad || []))
-          .catch(error => console.error(`Error fetching players for team ${teamId}:`, error));
-      } else {
-        setPlayers([]);
-      }
-    } else {
-      setPlayers([]);
-    }
-  }, [selectedTeam]);
-
-  const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
     e.preventDefault();
-    if (selectedTeam && selectedStyle) {
-      const teamObj = teams.find(t => t.id === parseInt(selectedTeam));
-      onNext && onNext({ team: teamObj, style: selectedStyle, players: players, allTeams: teams });
+    if (!selectedTeamId || !selectedStyle) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/teams/${selectedTeamId}`);
+      let teamData;
+
+      if (response.ok) {
+        teamData = await response.json();
+      } else {
+        console.warn(`API error for team ${selectedTeamId}: ${response.status}. Falling back to basic data.`);
+        teamData = teams.find(t => t.id === parseInt(selectedTeamId)) || {};
+      }
+
+      // Fallback for Roma squad
+      if (parseInt(selectedTeamId) === 100 && (!teamData.squad || teamData.squad.length === 0)) {
+        console.log("AS Roma squad not found via API, attempting to load from local fallback.");
+        try {
+          const fallbackResponse = await fetch('/roma_squad.json');
+          if (fallbackResponse.ok) {
+            const fallbackData = await fallbackResponse.json();
+            teamData.squad = fallbackData.squad; // Merge local squad into team data
+            console.log("Successfully loaded AS Roma squad from local file.");
+          } else {
+            console.error("Could not load local fallback squad for AS Roma.");
+          }
+        } catch (fallbackError) {
+          console.error("Error fetching local fallback squad for AS Roma:", fallbackError);
+        }
+      }
+
+      if (!teamData.squad || teamData.squad.length === 0) {
+        const teamName = teamData.name || teams.find(t => t.id === parseInt(selectedTeamId))?.name;
+        console.warn(`Squad for team ${teamName} is not available. App.js will use a default squad.`);
+      }
+
+      onTeamSelected({
+        team: teamData,
+        style: selectedStyle,
+        allTeams: teams,
+      });
+      
+    } catch (err) {
+      setError("Errore di rete. Verranno usati dati di base.");
+      console.error("Network or JSON parsing error, falling back to basic data:", err);
+      const selectedTeam = teams.find(t => t.id === parseInt(selectedTeamId));
+      onTeamSelected({ team: selectedTeam, style: selectedStyle, allTeams: teams });
     }
   };
+
+  if (loading) {
+    return <div className="min-h-screen bg-[#1a2a1a] text-white flex items-center justify-center p-4"><p>Caricamento squadre...</p></div>;
+  }
+
+  if (error) {
+    return <div className="min-h-screen bg-[#1a2a1a] text-white flex items-center justify-center p-4"><p>Errore nel caricamento: {error}</p></div>;
+  }
 
   return (
     <div className="min-h-screen bg-[#1a2a1a] text-white flex items-center justify-center p-4">
@@ -78,13 +116,10 @@ export default function TeamSelection({ onNext }) {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block mb-2 font-semibold text-[#FFD700]">SQUADRA</label>
-            {loading ? (
-              <div className="text-center p-4">Caricamento...</div>
-            ) : (
               <select
                 className="w-full p-3 bg-[#1a2a1a] border border-[#FFD700] rounded focus:outline-none focus:ring-2 focus:ring-[#FFD700]"
-                value={selectedTeam}
-                onChange={e => setSelectedTeam(e.target.value)}
+                value={selectedTeamId}
+                onChange={e => setSelectedTeamId(e.target.value)}
                 required
               >
                 <option value="">Seleziona una squadra</option>
@@ -92,18 +127,17 @@ export default function TeamSelection({ onNext }) {
                   <option key={team.id} value={team.id}>{team.name}</option>
                 ))}
               </select>
-            )}
           </div>
 
-          {selectedTeam && !loading && (
+          {selectedTeamId && (
             <div className="flex items-center justify-center gap-4 p-4 bg-black/20 rounded-lg">
               <img
-                src={teams.find(t => t.id === parseInt(selectedTeam))?.crest}
+                src={teams.find(t => t.id === parseInt(selectedTeamId))?.crest}
                 alt="Logo squadra"
                 className="w-16 h-16 object-contain"
               />
               <span className="text-2xl font-bold">
-                {teams.find(t => t.id === parseInt(selectedTeam))?.name}
+                {teams.find(t => t.id === parseInt(selectedTeamId))?.name}
               </span>
             </div>
           )}
@@ -127,7 +161,7 @@ export default function TeamSelection({ onNext }) {
           <button
             type="submit"
             className="w-full bg-[#FFD700] text-black py-3 rounded-lg font-bold text-lg hover:bg-white transition-all duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed"
-            disabled={!selectedTeam || !selectedStyle}
+            disabled={!selectedTeamId || !selectedStyle}
           >
             AVANTI
           </button>

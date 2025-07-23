@@ -7,9 +7,6 @@ import LineupSelection from './components/LineupSelection';
 import TopScorers from './components/TopScorers';
 import './App.css';
 
-// TODO: Move this to a .env file for better security
-// const API_KEY = '55e64e34833c444399581c586407b864';
-
 // Helper function to extract the last name from a full name for robust matching
 const getLastName = (fullName) => {
   if (typeof fullName !== 'string' || !fullName) return '';
@@ -17,42 +14,6 @@ const getLastName = (fullName) => {
   // Get the last part and normalize it by removing non-alphanumeric characters
   return parts[parts.length - 1].normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, '');
 };
-
-/*
-// Helper function to remove duplicate players from a squad
-const deduplicateSquad = (squad) => {
-  if (!Array.isArray(squad) || squad.length === 0) return [];
-  const uniquePlayers = new Map();
-  squad.forEach(player => {
-    // We need a consistent key. Player ID is the best one.
-    if (player && player.id && !uniquePlayers.has(player.id)) {
-      uniquePlayers.set(player.id, player);
-    }
-  });
-  return Array.from(uniquePlayers.values());
-};
-*/
-
-/*
-// Default squad template for teams without squad data
-const DEFAULT_SQUAD = [
-  { id: 1, name: "Goalkeeper 1", position: "Goalkeeper", stamina: 100 },
-  { id: 2, name: "Defender 1", position: "Defender", stamina: 100 },
-  { id: 3, name: "Defender 2", position: "Defender", stamina: 100 },
-  { id: 4, name: "Defender 3", position: "Defender", stamina: 100 },
-  { id: 5, name: "Defender 4", position: "Defender", stamina: 100 },
-  { id: 6, name: "Midfielder 1", position: "Midfielder", stamina: 100 },
-  { id: 7, name: "Midfielder 2", position: "Midfielder", stamina: 100 },
-  { id: 8, name: "Midfielder 3", position: "Midfielder", stamina: 100 },
-  { id: 9, name: "Forward 1", position: "Forward", stamina: 100 },
-  { id: 10, name: "Forward 2", position: "Forward", stamina: 100 },
-  { id: 11, name: "Forward 3", position: "Forward", stamina: 100 },
-  { id: 12, name: "Goalkeeper 2", position: "Goalkeeper", stamina: 100 },
-  { id: 13, name: "Defender 5", position: "Defender", stamina: 100 },
-  { id: 14, name: "Midfielder 4", position: "Midfielder", stamina: 100 },
-  { id: 15, name: "Forward 4", position: "Forward", stamina: 100 }
-];
-*/
 
 function AppContent() {
   const [selectionData, setSelectionData] = useState(null);
@@ -78,64 +39,19 @@ function AppContent() {
     fetchLocalStats();
   }, []);
 
-  /*
-  // A clean, synchronous function to apply overrides using the stats from state
-  const overrideStats = (squad, teamName) => {
-    if (teamName !== 'AS Roma' || !squad || !localPlayerStats) {
-      return squad;
-    }
-
-    const roleMapping = {
-      'POR': 'Goalkeeper',
-      'DIF': 'Defender',
-      'CEN': 'Midfielder',
-      'ATT': 'Attacker',
-    };
-
-    return squad.map(player => {
-      const playerLastName = getLastName(player.name);
-      const localPlayer = localPlayerStats.get(playerLastName);
-      if (localPlayer) {
-        const newPosition = roleMapping[localPlayer.ruolo] || player.position;
-        return {
-          ...player,
-          name: localPlayer.nome,
-          position: newPosition,
-          stats: {
-            speed: localPlayer.velocita,
-            technique: localPlayer.tecnica,
-            tackling: localPlayer.contrasti,
-            passing: localPlayer.passaggio,
-            shooting: localPlayer.tiro,
-            stamina: localPlayer.resistenza,
-          },
-        };
-      }
-      return player;
-    });
-  };
-  */
-
   // Effect to load data from session and apply overrides once local stats are ready
   useEffect(() => {
-    if (!localPlayerStats) return; // Wait for local stats to be loaded
-
-    try {
-      const savedSelection = sessionStorage.getItem('selectionData');
-      if (savedSelection) {
+    const savedSelection = sessionStorage.getItem('selectionData');
+    if (savedSelection) {
+      try {
         const selection = JSON.parse(savedSelection);
-        if (selection && selection.userTeam && selection.allTeams) {
-          // Apply overrides to the loaded selection data
-          // selection.userTeam.squad = overrideStats(selection.userTeam.squad, selection.userTeam.name);
+        if (selection && selection.userTeam && selection.teams) {
           setSelectionData(selection);
 
           const savedLineup = sessionStorage.getItem('lineupData');
           if (savedLineup) {
             const lineup = JSON.parse(savedLineup);
             if (lineup && lineup.titolari && lineup.panchina) {
-              // Apply overrides to the loaded lineup data
-              // lineup.titolari = overrideStats(lineup.titolari, selection.userTeam.name);
-              // lineup.panchina = overrideStats(lineup.panchina, selection.userTeam.name);
               setLineupData(lineup);
               setStep('season');
             } else {
@@ -148,44 +64,37 @@ function AppContent() {
         } else {
           throw new Error('Invalid saved selection data.');
         }
+      } catch (error) {
+        console.error('Could not load session data, resetting:', error);
+        resetSelection();
       }
-    } catch (error) {
-      console.error('Could not load session data, resetting:', error);
-      resetSelection();
     }
-  }, [localPlayerStats]); // This effect runs once localPlayerStats are available
+  }, []); // Run only once on mount
 
   const handleTeamSelected = ({ team: selectedTeam, style, allTeams }) => {
-    if (!localPlayerStats) {
-      console.error("Local stats not loaded yet, please wait.");
-      return;
-    }
-
-    // The full team data is already in selectedTeam, and the list of all teams is passed directly.
-    // No need for a new API call.
-
-    let finalSquad;
-    if (selectedTeam.squad && selectedTeam.squad.length > 0) {
-      finalSquad = selectedTeam.squad;
-    } else {
-      finalSquad = [];
-    }
-
-    // Ensure all other teams also have a valid squad for the season simulation
+    // Ensure every team has a squad array to prevent crashes
     const allTeamsData = allTeams.map(team => {
-      if (team.id === selectedTeam.id) {
-        return selectedTeam; // This is our modified team
+      if (!team.squad) {
+        console.warn(`Squadra ${team.name} non trovata, si usa una squadra di default.`);
+        // Use a simple default squad structure
+        const defaultSquad = Array.from({ length: 15 }, (_, i) => ({
+          id: team.id * 1000 + i + 1,
+          name: `Player ${i + 1}`,
+          position: i === 0 ? 'Goalkeeper' : (i < 5 ? 'Defender' : (i < 10 ? 'Midfielder' : 'Attacker')),
+          stamina: 100
+        }));
+        return { ...team, squad: defaultSquad };
       }
-      // If another team is missing a squad, assign the default one
-      if (!team.squad || team.squad.length === 0) {
-        return { ...team, squad: [] };
-      }
-      return team; // Return the team as is
+      // Deduplicate squad to prevent issues with duplicate player IDs
+      const uniqueSquad = [...new Map(team.squad.map(p => [p.id, p])).values()];
+      return { ...team, squad: uniqueSquad };
     });
 
+    const finalUserTeam = allTeamsData.find(t => t.id === selectedTeam.id);
+
     const selection = {
-      userTeam: selectedTeam,
-      teams: allTeamsData, // Corrected property name from allTeams to teams
+      userTeam: finalUserTeam,
+      teams: allTeamsData,
       userTeamStyle: style,
       competition: { name: 'Serie A', code: 'SA' },
     };

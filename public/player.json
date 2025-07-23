@@ -588,6 +588,98 @@
       "nazionalita": ["UZB"],
       "scadenzaContratto": "2026-06-30",
       "valoreMercato": 5000000
+    },
+    {
+      "id": 29,
+      "nome": "Marco Carnesecchi",
+      "squadra": "AC Milan",
+      "ruolo": "POR",
+      "ruoliSecondari": [],
+      "overall": null,
+      "velocita": null,
+      "tiro": null,
+      "passaggio": null,
+      "dribbling": null,
+      "difesa": null,
+      "fisico": null,
+      "annoNascita": 1999,
+      "altezzaCm": null,
+      "pesoKg": null,
+      "numeroMaglia": 57,
+      "nazionalita": [
+        "ITA"
+      ],
+      "scadenzaContratto": "2028-06-30",
+      "valoreMercato": 25000000
+    },
+    {
+      "id": 30,
+      "nome": "Marco Sportiello",
+      "squadra": "AC Milan",
+      "ruolo": "POR",
+      "ruoliSecondari": [],
+      "overall": null,
+      "velocita": null,
+      "tiro": null,
+      "passaggio": null,
+      "dribbling": null,
+      "difesa": null,
+      "fisico": null,
+      "annoNascita": 1991,
+      "altezzaCm": null,
+      "pesoKg": null,
+      "numeroMaglia": 31,
+      "nazionalita": [
+        "ITA"
+      ],
+      "scadenzaContratto": "2028-06-30",
+      "valoreMercato": 1000000
+    },
+    {
+      "id": 31,
+      "nome": "Francesco Rossi",
+      "squadra": "AC Milan",
+      "ruolo": "POR",
+      "ruoliSecondari": [],
+      "overall": null,
+      "velocita": null,
+      "tiro": null,
+      "passaggio": null,
+      "dribbling": null,
+      "difesa": null,
+      "fisico": null,
+      "annoNascita": 1990,
+      "altezzaCm": null,
+      "pesoKg": null,
+      "numeroMaglia": 42,
+      "nazionalita": [
+        "ITA"
+      ],
+      "scadenzaContratto": "2026-06-30",
+      "valoreMercato": 100000
+    },
+    {
+      "id": 32,
+      "nome": "Giorgio Scalvini",
+      "squadra": "Atalanta BC",
+      "ruolo": "DC",
+      "ruoliSecondari": [],
+      "overall": null,
+      "velocita": null,
+      "tiro": null,
+      "passaggio": null,
+      "dribbling": null,
+      "difesa": null,
+      "fisico": null,
+      "annoNascita": 2003,
+      "altezzaCm": null,
+      "pesoKg": null,
+      "numeroMaglia": 4,
+      "nazionalita": [
+        "ITA"
+      ],
+      "scadenzaContratto": "2028-06-30",
+      "valoreMercato": 35000000
     }
   ],
   "metadata": {

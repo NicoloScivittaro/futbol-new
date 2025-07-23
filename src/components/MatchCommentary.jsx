@@ -5,9 +5,9 @@ const MatchCommentary = ({ match, commentary, formation, userTeam, result, onClo
   const { home, away } = match;
   const [visibleEvents, setVisibleEvents] = useState([]);
   const [currentScore, setCurrentScore] = useState({ home: 0, away: 0 });
-  const [finalScore, setFinalScore] = useState(result);
-  const [showFinalScore, setShowFinalScore] = useState(false);
-  const [userFormation, setUserFormation] = useState(formation);
+  // const [finalScore, setFinalScore] = useState(result);
+  // const [showFinalScore, setShowFinalScore] = useState(false);
+  // const [userFormation, setUserFormation] = useState(formation);
 
   useEffect(() => {
     if (visibleEvents.length >= commentary.events.length) {

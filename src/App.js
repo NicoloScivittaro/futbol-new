@@ -22,9 +22,10 @@ function AppContent() {
   const [step, setStep] = useState('team');
   const [userMatchResult, setUserMatchResult] = useState(null);
   const [pendingMatch, setPendingMatch] = useState(null);
-  const [localPlayerStats, setLocalPlayerStats] = useState(null);
+  // const [localPlayerStats, setLocalPlayerStats] = useState(null);
 
   // Fetch local player stats once on mount
+  /*
   useEffect(() => {
     const fetchLocalStats = async () => {
       try {
@@ -38,6 +39,7 @@ function AppContent() {
     };
     fetchLocalStats();
   }, []);
+  */
 
   // Effect to load data from session and apply overrides once local stats are ready
   useEffect(() => {

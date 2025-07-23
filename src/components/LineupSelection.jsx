@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import './LineupSelection.css';
 import FormationDisplay from './FormationDisplay';
 
@@ -69,9 +69,11 @@ const FORMATIONS = {
   }
 };
 
+/*
 const getPositionsForTactic = (tactic) => {
   return FORMATIONS[tactic]?.positions || FORMATIONS['4-3-3'].positions;
 };
+*/
 
 const getCanonicalPosition = (apiPosition) => {
   if (typeof apiPosition !== 'string') return 'midfielder';
@@ -95,7 +97,7 @@ const POSITION_COMPATIBILITY = {
 };
 
 const LineupSelection = ({ selectionData, onNext, onBack, initialLineup }) => {
-  const [currentFormation, setCurrentFormation] = useState(selectionData?.tactic || '4-3-3');
+  const [currentFormation] = useState(initialLineup?.formation || '4-3-3');
   const [formation, setFormation] = useState({ titolari: [], panchina: [], rosaDisponibile: [] });
   const [selectedPlayerForSwap, setSelectedPlayerForSwap] = useState(null);
 

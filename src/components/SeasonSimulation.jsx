@@ -223,16 +223,16 @@ const SeasonSimulation = ({ selectionData, lineupData, onBack }) => {
   const [loading, setLoading] = useState(true);
   const [teams, setTeams] = useState([]);
   const [calendar, setCalendar] = useState([]);
-  const [standings, setStandings] = useState([]);
-  const [topScorers, setTopScorers] = useState([]);
+  // const [standings, setStandings] = useState([]);
+  // const [topScorers, setTopScorers] = useState([]);
   const [currentMatchday, setCurrentMatchday] = useState(1);
   const [results, setResults] = useState({});
   const [matchInProgress, setMatchInProgress] = useState(null);
   const [matchCommentaryData, setMatchCommentaryData] = useState(null);
   const [formation, setFormation] = useState({ titolari: {}, panchina: [], rosaDisponibile: [], changed: false });
   const [baseFormation, setBaseFormation] = useState(null);
-  const [selectedPosition, setSelectedPosition] = useState(null);
   const [selectedPlayerForSwap, setSelectedPlayerForSwap] = useState(null);
+  // const [selectedPosition, setSelectedPosition] = useState(null);
 
   useEffect(() => {
     if (selectionData && selectionData.teams && lineupData) {
@@ -277,8 +277,8 @@ const SeasonSimulation = ({ selectionData, lineupData, onBack }) => {
   useEffect(() => {
     if (teams.length > 0 && lineupData && selectionData) {
       setCalendar(generateCalendar(teams));
-      setStandings(calculateStandings([], teams));
-      setTopScorers(calculateTopScorers([], teams));
+      // setStandings(calculateStandings([], teams));
+      // setTopScorers(calculateTopScorers([], teams));
 
       const userTeamLineup = lineupData.find(ld => ld.team_id === selectionData.userTeam.id);
       if (userTeamLineup) {
@@ -348,7 +348,7 @@ const SeasonSimulation = ({ selectionData, lineupData, onBack }) => {
     setSelectedPlayerForSwap(null);
   };
 
-  const handlePositionClick = (positionKey) => { if (selectedPlayerForSwap) handlePlayerSelection(null, 'titolari', positionKey); };
+  // const handlePositionClick = (positionKey) => { if (selectedPlayerForSwap) handlePlayerSelection(null, 'titolari', positionKey); };
 
   const setAutomaticFormation = () => {
     const players = [...Object.values(formation.titolari), ...formation.panchina, ...formation.rosaDisponibile];

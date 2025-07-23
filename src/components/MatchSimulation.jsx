@@ -62,7 +62,7 @@ const generateOpponentLineup = (squad) => {
   let maxStrength = -1;
   let bestFormationStarters = [];
 
-  for (const [name, counts] of Object.entries(formations)) {
+  for (const [, counts] of Object.entries(formations)) {
     if (goalkeepers.length >= 1 && defenders.length >= counts.D && midfielders.length >= counts.M && attackers.length >= counts.A) {
       const currentStarters = [
         ...goalkeepers.slice(0, 1),

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import TeamSelection from './components/Coach/TeamSelection';
+import PlayerDetails from './components/PlayerDetails';
 import SeasonSimulation from './components/SeasonSimulation';
 import MatchSimulation from './components/MatchSimulation';
 import LineupSelection from './components/LineupSelection';
@@ -8,7 +9,8 @@ import TopScorers from './components/TopScorers';
 import './App.css';
 
 function AppContent() {
-  const [selectionData, setSelectionData] = useState(null);
+    const [selectionData, setSelectionData] = useState(null);
+  const [detailedPlayer, setDetailedPlayer] = useState(null); // Player for the details modal
   const [lineupData, setLineupData] = useState(null);
   const [matchData, setMatchData] = useState(null);
   const [step, setStep] = useState('team');
@@ -162,6 +164,14 @@ function AppContent() {
     setStep('team');
   };
 
+  const handleShowPlayerDetails = (player) => {
+    setDetailedPlayer(player);
+  };
+
+  const handleClosePlayerDetails = () => {
+    setDetailedPlayer(null);
+  };
+
   const renderStep = () => {
     if (step !== 'team' && !selectionData) {
         return <div className="loading-container">Loading...</div>;
@@ -169,7 +179,7 @@ function AppContent() {
 
     switch (step) {
       case 'lineup':
-        return <LineupSelection selectionData={selectionData} onNext={handleLineupConfirm} onBack={resetSelection} />;
+        return <LineupSelection selectionData={selectionData} onNext={handleLineupConfirm} onBack={resetSelection} onPlayerSelect={handleShowPlayerDetails} />;
       case 'prematch':
         return <LineupSelection 
                 selectionData={selectionData} 
@@ -190,13 +200,14 @@ function AppContent() {
         return <MatchSimulation matchData={matchData} lineupData={lineupData} userTeam={selectionData.userTeam} onMatchEnd={handleMatchEnd} />;
       case 'team':
       default:
-        return <TeamSelection onTeamSelected={handleTeamSelected} />;
+        return <TeamSelection onTeamSelected={handleTeamSelected} onPlayerSelect={handleShowPlayerDetails} />;
     }
   };
 
   return (
     <main>
       {loading ? <div className="loading-container">Loading...</div> : renderStep()}
+      {detailedPlayer && <PlayerDetails player={detailedPlayer} onClose={handleClosePlayerDetails} />}
     </main>
   );
 }

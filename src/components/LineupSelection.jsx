@@ -138,29 +138,22 @@ const POSITION_COMPATIBILITY = {
   },
 };
 
-const LineupSelection = ({ selectionData, onNext, onBack, initialLineup }) => {
+const LineupSelection = ({ selectionData, onNext, onBack, initialLineup, onPlayerSelect }) => {
   const [currentFormation] = useState(initialLineup?.formation || '4-3-3');
   const [formation, setFormation] = useState({ titolari: [], panchina: [], rosaDisponibile: [] });
   const [selectedPlayerForSwap, setSelectedPlayerForSwap] = useState(null);
+  const [swapMode, setSwapMode] = useState(false); // New state for swap mode
 
   useEffect(() => {
     const fullSquadRaw = selectionData?.userTeam?.squad || [];
+    const fullSquad = JSON.parse(JSON.stringify(fullSquadRaw));
 
-    // De-duplica la rosa basandosi sull'ID del giocatore per evitare errori di chiave
-    const seenIds = new Set();
-    const fullSquad = fullSquadRaw.filter(player => {
-      if (!player || typeof player.id === 'undefined') return false;
-      if (seenIds.has(player.id)) {
-        console.warn(`ID giocatore duplicato rimosso: ${player.id}`);
-        return false;
-      }
-      seenIds.add(player.id);
-      return true;
+    const initialTitolari = (initialLineup?.titolari || []).map(p => {
+        const playerWithStats = fullSquad.find(fp => fp.id === p.id) || p;
+        return { ...playerWithStats, fieldPosition: p.fieldPosition };
     });
-
-    const initialTitolari = initialLineup?.titolari || [];
     const initialPanchina = initialLineup?.panchina || [];
-    
+
     const usedPlayerIds = new Set([
       ...initialTitolari.map(p => p.id),
       ...initialPanchina.map(p => p.id)
@@ -175,39 +168,42 @@ const LineupSelection = ({ selectionData, onNext, onBack, initialLineup }) => {
     });
   }, [selectionData, initialLineup]);
 
-    const handlePlayerClick = (player, sourceListName, positionKey) => {
-    // Always use the original player data from props to avoid data loss
+  const handlePlayerClick = (player, sourceListName, positionKey) => {
+    // If not in swap mode, show player details and do nothing else.
+    if (!swapMode) {
+      if (player) {
+        onPlayerSelect(player);
+      }
+      return;
+    }
+
+    // --- The rest of the function is the existing swap logic ---
     const allPlayers = selectionData.players;
 
-    // Case 1: No player is selected yet. Select the clicked player.
     if (!selectedPlayerForSwap) {
-      if (player) { // Can't select an empty slot as a source
+      if (player) {
         setSelectedPlayerForSwap({ player, source: sourceListName, positionKey });
       }
       return;
     }
 
-    // Case 2: A player is already selected. This is the second click (the destination).
     const { player: player1, source: source1, positionKey: key1 } = selectedPlayerForSwap;
 
-    // If the user clicks the same player again, deselect it.
     if (player && player1.id === player.id) {
       setSelectedPlayerForSwap(null);
       return;
     }
     
-    const player2 = player; // This can be null if clicking an empty slot
+    const player2 = player;
     const source2 = sourceListName;
     const key2 = positionKey;
 
-    // Create deep copies of the current state lists to modify
     const newLists = {
       titolari: JSON.parse(JSON.stringify(formation.titolari)),
       panchina: JSON.parse(JSON.stringify(formation.panchina)),
       rosaDisponibile: JSON.parse(JSON.stringify(formation.rosaDisponibile)),
     };
 
-    // Find the full, original data for the players being moved
     const fullPlayer1 = allPlayers.find(p => p.id === player1.id);
     const fullPlayer2 = player2 ? allPlayers.find(p => p.id === player2.id) : null;
 
@@ -217,22 +213,18 @@ const LineupSelection = ({ selectionData, onNext, onBack, initialLineup }) => {
       return;
     }
 
-    // 1. Remove player1 from its source list
     let p1Index = newLists[source1].findIndex(p => p.id === player1.id);
     if (p1Index > -1) newLists[source1].splice(p1Index, 1);
 
-    // 2. Remove player2 from its source list (if it exists)
     if (fullPlayer2) {
       let p2Index = newLists[source2].findIndex(p => p.id === player2.id);
       if (p2Index > -1) newLists[source2].splice(p2Index, 1);
     }
 
-    // 3. Add player1 to its new destination, ensuring it has full data
     const player1ForDest = { ...fullPlayer1 };
     if (source2 === 'titolari') player1ForDest.fieldPosition = key2;
     newLists[source2].push(player1ForDest);
 
-    // 4. Add player2 to its new destination (if it exists)
     if (fullPlayer2) {
       const player2ForDest = { ...fullPlayer2 };
       if (source1 === 'titolari') player2ForDest.fieldPosition = key1;
@@ -245,12 +237,13 @@ const LineupSelection = ({ selectionData, onNext, onBack, initialLineup }) => {
       rosaDisponibile: newLists.rosaDisponibile,
     });
 
-    setSelectedPlayerForSwap(null); // Reset after swap
+    setSelectedPlayerForSwap(null);
   };
 
   const handleAutoFill = () => {
-    // Combine all available players into one list to ensure we consider everyone
     const allPlayers = [...formation.titolari, ...formation.panchina, ...formation.rosaDisponibile];
+    const formationSlots = FORMATIONS[currentFormation].positions;
+
     const playersByRole = {
       goalkeeper: [],
       defender: [],
@@ -259,35 +252,29 @@ const LineupSelection = ({ selectionData, onNext, onBack, initialLineup }) => {
       forward: [],
     };
 
-    // Categorize and sort players by role and overall rating
     allPlayers.forEach(player => {
       const role = getCanonicalPosition(player.ruolo);
-      if (playersByRole[role]) {
-        playersByRole[role].push(player);
-      }
+      playersByRole[role].push(player);
     });
 
-    // Sort each role group by overall descending
     for (const role in playersByRole) {
-      playersByRole[role].sort((a, b) => (b.overall || 0) - (a.overall || 0));
+      playersByRole[role].sort((a, b) => {
+        const ratingA = calculatePlayerRating(a, role);
+        const ratingB = calculatePlayerRating(b, role);
+        return ratingB - ratingA;
+      });
     }
 
     const newTitolari = [];
-    const formationSlots = FORMATIONS[currentFormation].positions;
-
-    // Create a copy of the sorted players to draw from
     const availablePlayers = JSON.parse(JSON.stringify(playersByRole));
 
     formationSlots.forEach((slot, index) => {
       const role = slot.role;
       let playerToAssign = null;
 
-      // Find the best available player for the role
       if (availablePlayers[role] && availablePlayers[role].length > 0) {
         playerToAssign = availablePlayers[role].shift();
       } else {
-        // If no player for the specific role, try to find a compatible one from other roles
-        // This is a simple fallback, could be improved with compatibility scores
         const fallbackRoles = ['forward', 'attacking-midfielder', 'midfielder', 'defender'];
         for (const fallbackRole of fallbackRoles) {
           if (availablePlayers[fallbackRole] && availablePlayers[fallbackRole].length > 0) {
@@ -303,11 +290,10 @@ const LineupSelection = ({ selectionData, onNext, onBack, initialLineup }) => {
       }
     });
 
-    // Remaining players go to the bench or available list
     const remainingPlayers = Object.values(availablePlayers).flat();
     remainingPlayers.sort((a, b) => (b.overall || 0) - (a.overall || 0));
 
-    const newPanchina = remainingPlayers.slice(0, 12); // Max 12 on bench
+    const newPanchina = remainingPlayers.slice(0, 12);
     const newRosaDisponibile = remainingPlayers.slice(12);
 
     setFormation({
@@ -317,33 +303,11 @@ const LineupSelection = ({ selectionData, onNext, onBack, initialLineup }) => {
     });
   };
 
-  const handleClear = () => {
-    const allPlayers = [...formation.titolari, ...formation.panchina, ...formation.rosaDisponibile];
-    setFormation({
-      titolari: [],
-      panchina: [],
-      rosaDisponibile: allPlayers
-    });
-  };
-
-  const handleSave = () => {
-    if (formation.titolari.length !== 11) {
-      alert('Devi selezionare 11 giocatori titolari!');
-      return;
-    }
-    onNext({ 
-      formation: currentFormation,
-      titolari: formation.titolari,
-      panchina: formation.panchina
-    });
-  };
-
-    const calculatePlayerRating = (player, fieldRole) => {
+  const calculatePlayerRating = (player, fieldRole) => {
     if (!player) return 0;
 
     const playerRole = getCanonicalPosition(player.ruolo);
 
-    // Use the role-specific performance calculator if stats are available
     const hasAllStats = player.velocita && player.tiro && player.passaggio && player.dribbling && player.difesa && player.fisico;
     const hasGoalkeeperStats = player.tuffo && player.presa && player.rinvio && player.riflessi && player.reattivita && player.piazzamento;
 
@@ -357,7 +321,6 @@ const LineupSelection = ({ selectionData, onNext, onBack, initialLineup }) => {
       return Math.round(performanceRating * compatibility);
     }
 
-    // Fallback to simple overall-based calculation if stats are incomplete
     const baseRating = player.overall || 70;
     const compatibility = POSITION_COMPATIBILITY[playerRole]?.[fieldRole] || 0.5;
     return Math.round(baseRating * compatibility);
@@ -372,20 +335,25 @@ const LineupSelection = ({ selectionData, onNext, onBack, initialLineup }) => {
   };
 
   return (
-    <FormationDisplay
-      formation={formation}
-      currentFormation={currentFormation}
-      onPlayerClick={handlePlayerClick}
-      selectedPlayerForSwap={selectedPlayerForSwap}
-      calculatePlayerRating={calculatePlayerRating}
-      getPositionStatus={getPositionStatus}
-      showControls={true}
-      onAutoFill={handleAutoFill}
-      onClear={handleClear}
-      onBack={onBack}
-      onSave={handleSave}
-    />
+    <div className="lineup-selection-container">
+      <div className="lineup-controls">
+        <button onClick={() => setSwapMode(!swapMode)} className={`swap-mode-button ${swapMode ? 'active' : ''}`}>
+          {swapMode ? 'Modalità Scambio Attiva' : 'Attiva Scambio Giocatori'}
+        </button>
+      </div>
+      <FormationDisplay
+        formation={formation}
+        currentFormation={currentFormation}
+        onPlayerClick={handlePlayerClick}
+        selectedPlayerForSwap={selectedPlayerForSwap}
+        calculatePlayerRating={calculatePlayerRating}
+        getPositionStatus={getPositionStatus}
+        showControls={true}
+        onAutoFill={handleAutoFill}
+        onClear={handleClear}
+        onBack={onBack}
+        onSave={handleSave}
+      />
+    </div>
   );
 };
-
-export default LineupSelection;

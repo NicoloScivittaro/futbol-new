@@ -16,36 +16,80 @@ export default function TeamSelection({ onTeamSelected }) {
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        console.log('Loading teams from local seriea_squad.json file...');
+        console.log('Loading teams and players from local JSON files...');
+        setLoading(true);
         
-        // Load teams from local file
-        const response = await fetch('/seriea_squad.json');
-        if (!response.ok) {
-          throw new Error(`Local file error! status: ${response.status}`);
+        // Load players from player.json
+        const playersResponse = await fetch('/player.json');
+        if (!playersResponse.ok) {
+          throw new Error(`Failed to load players: ${playersResponse.status}`);
         }
+        const playersData = await playersResponse.json();
         
-        const data = await response.json();
-        console.log('Successfully loaded teams from local file:', data.teams?.length || 0, 'teams');
+        // Load teams from sa_teams.json
+        const teamsResponse = await fetch('/sa_teams.json');
+        if (!teamsResponse.ok) {
+          throw new Error(`Failed to load teams: ${teamsResponse.status}`);
+        }
+        const teamsData = await teamsResponse.json();
         
-        // The file should already contain squad data for each team
-        setTeams(data.teams || []);
-        console.log('All teams loaded with squad data from local file');
-      } catch (e) {
-        console.error("Failed to load from seriea_squad.json, trying fallback files:", e);
-        
-        // Fallback to sa_teams.json if seriea_squad.json doesn't exist
-        try {
-          const response = await fetch('/sa_teams.json');
-          if (!response.ok) {
-            throw new Error(`Fallback file error! status: ${response.status}`);
+        // Group players by team
+        const playersByTeam = {};
+        playersData.players.forEach(player => {
+          const teamName = player.squadra;
+          if (!playersByTeam[teamName]) {
+            playersByTeam[teamName] = [];
           }
-          const data = await response.json();
-          setTeams(data.teams || []);
-          setError(null);
-          console.log('Loaded teams from fallback sa_teams.json');
-        } catch (localError) {
-          setError("Failed to load teams data from local files");
-          console.error("Failed to fetch from any local file:", localError);
+          
+          // Convert player format to match expected structure
+          const convertedPlayer = {
+            id: player.id,
+            name: player.nome,
+            position: player.ruolo,
+            dateOfBirth: player.annoNascita ? `${player.annoNascita}-01-01` : null,
+            nationality: player.nazionalita ? player.nazionalita[0] : 'Unknown',
+            shirtNumber: player.numeroMaglia,
+            marketValue: player.valoreMercato,
+            // Add additional attributes from player.json
+            overall: player.overall,
+            height: player.altezzaCm,
+            weight: player.pesoKg,
+            contractExpiry: player.scadenzaContratto
+          };
+          
+          playersByTeam[teamName].push(convertedPlayer);
+        });
+        
+        // Combine teams with their players
+        const teamsWithSquads = teamsData.teams.map(team => {
+          const teamPlayers = playersByTeam[team.name] || [];
+          return {
+            ...team,
+            squad: teamPlayers
+          };
+        });
+        
+        console.log('Teams loaded successfully:', teamsWithSquads.length);
+        setTeams(teamsWithSquads);
+        setError(null);
+        
+      } catch (error) {
+        console.error('Error loading teams and players:', error);
+        setError(`Failed to load teams and players: ${error.message}`);
+        
+        // Fallback: try to load from seriea_squad.json
+        try {
+          console.log('Attempting fallback to seriea_squad.json...');
+          const fallbackResponse = await fetch('/seriea_squad.json');
+          if (fallbackResponse.ok) {
+            const fallbackData = await fallbackResponse.json();
+            setTeams(fallbackData.teams || []);
+            setError(null);
+            console.log('Fallback successful');
+          }
+        } catch (fallbackError) {
+          console.error('Fallback also failed:', fallbackError);
+          setError('Failed to load team data from all sources');
         }
       } finally {
         setLoading(false);

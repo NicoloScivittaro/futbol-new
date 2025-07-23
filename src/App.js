@@ -8,12 +8,12 @@ import TopScorers from './components/TopScorers';
 import './App.css';
 
 // Helper function to extract the last name from a full name for robust matching
-const getLastName = (fullName) => {
-  if (typeof fullName !== 'string' || !fullName) return '';
-  const parts = fullName.trim().toLowerCase().split(' ');
+//const getLastName = (fullName) => {
+  //if (typeof fullName !== 'string' || !fullName) return '';
+  //const parts = fullName.trim().toLowerCase().split(' ');
   // Get the last part and normalize it by removing non-alphanumeric characters
-  return parts[parts.length - 1].normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, '');
-};
+  //return parts[parts.length - 1].normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, '');
+//};
 
 function AppContent() {
   const [selectionData, setSelectionData] = useState(null);

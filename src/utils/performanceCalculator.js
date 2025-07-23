@@ -147,9 +147,11 @@ export function calcolaModificatoreStanchezza(minutiGiocati, fisico) {
   return Math.max(0.5, 1.0 - penalita);
 }
 
-export default {
+const performanceCalculator = {
   calcolaPrestazione,
   calcolaPrestazionePerRuolo,
   calcolaProbabilitaAzione,
   calcolaModificatoreStanchezza
 };
+
+export default performanceCalculator;

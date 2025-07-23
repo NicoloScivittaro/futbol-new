@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './LineupSelection.css';
 import FormationDisplay from './FormationDisplay';
-import { calcolaPrestazione, calcolaPrestazionePerRuolo } from '../utils/performanceCalculator';
+import { calcolaPrestazione } from '../utils/performanceCalculator';
 
 const FORMATIONS = {
   '4-3-3': {

@@ -18,6 +18,7 @@ const getLastName = (fullName) => {
   return parts[parts.length - 1].normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, '');
 };
 
+/*
 // Helper function to remove duplicate players from a squad
 const deduplicateSquad = (squad) => {
   if (!Array.isArray(squad) || squad.length === 0) return [];
@@ -30,7 +31,9 @@ const deduplicateSquad = (squad) => {
   });
   return Array.from(uniquePlayers.values());
 };
+*/
 
+/*
 // Default squad template for teams without squad data
 const DEFAULT_SQUAD = [
   { id: 1, name: "Goalkeeper 1", position: "Goalkeeper", stamina: 100 },
@@ -49,6 +52,7 @@ const DEFAULT_SQUAD = [
   { id: 14, name: "Midfielder 4", position: "Midfielder", stamina: 100 },
   { id: 15, name: "Forward 4", position: "Forward", stamina: 100 }
 ];
+*/
 
 function AppContent() {
   const [selectionData, setSelectionData] = useState(null);
@@ -74,6 +78,7 @@ function AppContent() {
     fetchLocalStats();
   }, []);
 
+  /*
   // A clean, synchronous function to apply overrides using the stats from state
   const overrideStats = (squad, teamName) => {
     if (teamName !== 'AS Roma' || !squad || !localPlayerStats) {
@@ -92,12 +97,24 @@ function AppContent() {
       const localPlayer = localPlayerStats.get(playerLastName);
       if (localPlayer) {
         const newPosition = roleMapping[localPlayer.ruolo] || player.position;
-        // Return a new object to ensure state updates correctly, overriding stats and position
-        return { ...player, overall: localPlayer.overall, position: newPosition };
+        return {
+          ...player,
+          name: localPlayer.nome,
+          position: newPosition,
+          stats: {
+            speed: localPlayer.velocita,
+            technique: localPlayer.tecnica,
+            tackling: localPlayer.contrasti,
+            passing: localPlayer.passaggio,
+            shooting: localPlayer.tiro,
+            stamina: localPlayer.resistenza,
+          },
+        };
       }
       return player;
     });
   };
+  */
 
   // Effect to load data from session and apply overrides once local stats are ready
   useEffect(() => {
@@ -109,7 +126,7 @@ function AppContent() {
         const selection = JSON.parse(savedSelection);
         if (selection && selection.userTeam && selection.allTeams) {
           // Apply overrides to the loaded selection data
-          selection.userTeam.squad = overrideStats(selection.userTeam.squad, selection.userTeam.name);
+          // selection.userTeam.squad = overrideStats(selection.userTeam.squad, selection.userTeam.name);
           setSelectionData(selection);
 
           const savedLineup = sessionStorage.getItem('lineupData');
@@ -117,8 +134,8 @@ function AppContent() {
             const lineup = JSON.parse(savedLineup);
             if (lineup && lineup.titolari && lineup.panchina) {
               // Apply overrides to the loaded lineup data
-              lineup.titolari = overrideStats(lineup.titolari, selection.userTeam.name);
-              lineup.panchina = overrideStats(lineup.panchina, selection.userTeam.name);
+              // lineup.titolari = overrideStats(lineup.titolari, selection.userTeam.name);
+              // lineup.panchina = overrideStats(lineup.panchina, selection.userTeam.name);
               setLineupData(lineup);
               setStep('season');
             } else {
@@ -149,29 +166,25 @@ function AppContent() {
 
     let finalSquad;
     if (selectedTeam.squad && selectedTeam.squad.length > 0) {
-      finalSquad = deduplicateSquad(selectedTeam.squad);
+      finalSquad = selectedTeam.squad;
     } else {
-      finalSquad = DEFAULT_SQUAD.map(p => ({ ...p, id: p.id + selectedTeam.id * 10000 }));
+      finalSquad = [];
     }
-
-    // Apply overrides to the user's selected team
-    const modifiedSquad = overrideStats(finalSquad, selectedTeam.name);
-    const finalUserTeam = { ...selectedTeam, squad: modifiedSquad };
 
     // Ensure all other teams also have a valid squad for the season simulation
     const allTeamsData = allTeams.map(team => {
-      if (team.id === finalUserTeam.id) {
-        return finalUserTeam; // This is our modified team
+      if (team.id === selectedTeam.id) {
+        return selectedTeam; // This is our modified team
       }
       // If another team is missing a squad, assign the default one
       if (!team.squad || team.squad.length === 0) {
-        return { ...team, squad: DEFAULT_SQUAD.map(p => ({ ...p, id: p.id + team.id * 10000 })) };
+        return { ...team, squad: [] };
       }
       return team; // Return the team as is
     });
 
     const selection = {
-      userTeam: finalUserTeam,
+      userTeam: selectedTeam,
       teams: allTeamsData, // Corrected property name from allTeams to teams
       userTeamStyle: style,
       competition: { name: 'Serie A', code: 'SA' },

@@ -175,75 +175,77 @@ const LineupSelection = ({ selectionData, onNext, onBack, initialLineup }) => {
     });
   }, [selectionData, initialLineup]);
 
-  const handlePlayerClick = (player, sourceListName, positionKey) => {
+    const handlePlayerClick = (player, sourceListName, positionKey) => {
+    // Always use the original player data from props to avoid data loss
+    const allPlayers = selectionData.players;
+
     // Case 1: No player is selected yet. Select the clicked player.
     if (!selectedPlayerForSwap) {
-      if (player) {
-        setSelectedPlayerForSwap({ player, source: sourceListName });
+      if (player) { // Can't select an empty slot as a source
+        setSelectedPlayerForSwap({ player, source: sourceListName, positionKey });
       }
-      return; // Do nothing if an empty slot is clicked first.
+      return;
     }
 
-    // Case 2: A player is already selected. Handle the second click.
-    const player1Info = selectedPlayerForSwap;
+    // Case 2: A player is already selected. This is the second click (the destination).
+    const { player: player1, source: source1, positionKey: key1 } = selectedPlayerForSwap;
 
     // If the user clicks the same player again, deselect it.
-    if (player && player1Info.player.id === player.id) {
-      setSelectedPlayerForSwap(null);
-      return;
-    }
-
-    const newFormation = JSON.parse(JSON.stringify(formation));
-    const sourceList = newFormation[player1Info.source];
-    const sourceIndex = sourceList.findIndex(p => p.id === player1Info.player.id);
-
-    if (sourceIndex === -1) {
-      setSelectedPlayerForSwap(null); // Should not happen
-      return;
-    }
-
-    // Scenario A: Moving a selected player to an empty 'titolari' slot.
-    if (!player && sourceListName === 'titolari') {
-      const playerToMove = sourceList.splice(sourceIndex, 1)[0];
-      playerToMove.fieldPosition = positionKey; // Assign the new position
-      newFormation.titolari.push(playerToMove);
-      setFormation(newFormation);
+    if (player && player1.id === player.id) {
       setSelectedPlayerForSwap(null);
       return;
     }
     
-    // Scenario B: Swapping two players.
-    const player2Info = { player, source: sourceListName };
-    const destList = newFormation[player2Info.source];
-    const destIndex = destList.findIndex(p => p.id === player2Info.player.id);
+    const player2 = player; // This can be null if clicking an empty slot
+    const source2 = sourceListName;
+    const key2 = positionKey;
 
-    if (destIndex === -1) {
-      setSelectedPlayerForSwap(null); // Should not happen
+    // Create deep copies of the current state lists to modify
+    const newLists = {
+      titolari: JSON.parse(JSON.stringify(formation.titolari)),
+      panchina: JSON.parse(JSON.stringify(formation.panchina)),
+      rosaDisponibile: JSON.parse(JSON.stringify(formation.rosaDisponibile)),
+    };
+
+    // Find the full, original data for the players being moved
+    const fullPlayer1 = allPlayers.find(p => p.id === player1.id);
+    const fullPlayer2 = player2 ? allPlayers.find(p => p.id === player2.id) : null;
+
+    if (!fullPlayer1) {
+      console.error("Could not find player1 data. Aborting swap.");
+      setSelectedPlayerForSwap(null);
       return;
     }
 
-    // Perform the swap
-    const p1_data = sourceList[sourceIndex];
-    const p2_data = destList[destIndex];
-    sourceList[sourceIndex] = p2_data;
-    destList[destIndex] = p1_data;
+    // 1. Remove player1 from its source list
+    let p1Index = newLists[source1].findIndex(p => p.id === player1.id);
+    if (p1Index > -1) newLists[source1].splice(p1Index, 1);
 
-    // Correctly swap or assign fieldPosition for titolari
-    const p1_is_titolare = player1Info.source === 'titolari';
-    const p2_is_titolare = player2Info.source === 'titolari';
-
-    if (p1_is_titolare && p2_is_titolare) {
-      [p1_data.fieldPosition, p2_data.fieldPosition] = [p2_data.fieldPosition, p1_data.fieldPosition];
-    } else if (p1_is_titolare && !p2_is_titolare) {
-      p2_data.fieldPosition = p1_data.fieldPosition;
-      delete p1_data.fieldPosition;
-    } else if (!p1_is_titolare && p2_is_titolare) {
-      p1_data.fieldPosition = p2_data.fieldPosition;
-      delete p2_data.fieldPosition;
+    // 2. Remove player2 from its source list (if it exists)
+    if (fullPlayer2) {
+      let p2Index = newLists[source2].findIndex(p => p.id === player2.id);
+      if (p2Index > -1) newLists[source2].splice(p2Index, 1);
     }
 
-    setFormation(newFormation);
-    setSelectedPlayerForSwap(null); // Reset selection after swap
+    // 3. Add player1 to its new destination, ensuring it has full data
+    const player1ForDest = { ...fullPlayer1 };
+    if (source2 === 'titolari') player1ForDest.fieldPosition = key2;
+    newLists[source2].push(player1ForDest);
+
+    // 4. Add player2 to its new destination (if it exists)
+    if (fullPlayer2) {
+      const player2ForDest = { ...fullPlayer2 };
+      if (source1 === 'titolari') player2ForDest.fieldPosition = key1;
+      newLists[source1].push(player2ForDest);
+    }
+
+    setFormation({
+      titolari: newLists.titolari,
+      panchina: newLists.panchina,
+      rosaDisponibile: newLists.rosaDisponibile,
+    });
+
+    setSelectedPlayerForSwap(null); // Reset after swap
   };
 
   const handleAutoFill = () => {

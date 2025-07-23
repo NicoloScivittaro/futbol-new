@@ -357,3 +357,5 @@ const LineupSelection = ({ selectionData, onNext, onBack, initialLineup, onPlaye
     </div>
   );
 };
+
+export default LineupSelection;

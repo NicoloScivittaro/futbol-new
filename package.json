@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
+    "node-fetch": "^3.3.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.7.0",

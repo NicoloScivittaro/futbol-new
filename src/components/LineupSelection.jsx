@@ -101,11 +101,41 @@ const getCanonicalPosition = (apiPosition) => {
 };
 
 const POSITION_COMPATIBILITY = {
-  'goalkeeper': { 'goalkeeper': 1.0 },
-  'defender': { 'defender': 1.0, 'midfielder': 0.8, 'attacking-midfielder': 0.6, 'forward': 0.5 },
-  'midfielder': { 'midfielder': 1.0, 'defender': 0.85, 'attacking-midfielder': 0.9, 'forward': 0.75 },
-  'attacking-midfielder': { 'attacking-midfielder': 1.0, 'midfielder': 0.9, 'forward': 0.85, 'defender': 0.6 },
-  'forward': { 'forward': 1.0, 'attacking-midfielder': 0.85, 'midfielder': 0.75, 'defender': 0.5 },
+  goalkeeper: {
+    goalkeeper: 1,
+    defender: 0.1,
+    midfielder: 0.1,
+    'attacking-midfielder': 0.1,
+    forward: 0.1,
+  },
+  defender: {
+    goalkeeper: 0.1,
+    defender: 1,
+    midfielder: 0.8, // Defensive midfielders are common
+    'attacking-midfielder': 0.4,
+    forward: 0.3,
+  },
+  midfielder: {
+    goalkeeper: 0.1,
+    defender: 0.7, // Can adapt to a defensive role
+    midfielder: 1,
+    'attacking-midfielder': 0.9, // Strong compatibility
+    forward: 0.6, // Can be a makeshift forward
+  },
+  'attacking-midfielder': {
+    goalkeeper: 0.1,
+    defender: 0.3,
+    midfielder: 0.9, // Can play deeper
+    'attacking-midfielder': 1,
+    forward: 0.9, // High compatibility, often plays as a second striker
+  },
+  forward: {
+    goalkeeper: 0.1,
+    defender: 0.3,
+    midfielder: 0.6, // Can drop back to midfield
+    'attacking-midfielder': 0.85, // High compatibility, can play as an attacking midfielder
+    forward: 1,
+  },
 };
 
 const LineupSelection = ({ selectionData, onNext, onBack, initialLineup }) => {

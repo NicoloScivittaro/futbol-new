@@ -16,28 +16,51 @@
  * @returns {number} Prestazione modificata (0-150 circa)
  */
 export function calcolaPrestazione(giocatore) {
-  let base = 50;
+  if (!giocatore) return 0;
 
-  // Bonus / Malus per ogni statistica (soglia di riferimento: 70)
-  const bonusVelocita = (giocatore.velocita - 70) * 0.2;    // corsa e ripartenze
-  const bonusTiro = (giocatore.tiro - 70) * 0.3;             // finalizzazione
-  const bonusPassaggio = (giocatore.passaggio - 70) * 0.25;  // creazione gioco
-  const bonusDribbling = (giocatore.dribbling - 70) * 0.2;   // 1v1
-  const bonusDifesa = (giocatore.difesa - 70) * 0.35;        // chiusure
-  const bonusFisico = (giocatore.fisico - 70) * 0.2;         // contrasti e stanchezza
-  const bonusOverall = (giocatore.overall - 70) * 0.4;       // influenza complessiva
+  const { ruolo, overall } = giocatore;
 
-  // Calcolo finale
-  const prestazioneModificata = base +
-    bonusVelocita +
-    bonusTiro +
-    bonusPassaggio +
-    bonusDribbling +
-    bonusDifesa +
-    bonusFisico +
-    bonusOverall;
+  // Specialized handling for goalkeepers
+  if (ruolo === 'POR') {
+    const { tuffo, presa, rinvio, riflessi, reattivita, piazzamento } = giocatore;
+    if ([tuffo, presa, rinvio, riflessi, reattivita, piazzamento].some(s => s === undefined)) {
+      return (overall || 50); // Fallback if goalkeeper stats are missing
+    }
+    let prestazione = 50;
+    prestazione += (tuffo - 70) * 0.2;
+    prestazione += (presa - 70) * 0.2;
+    prestazione += (rinvio - 70) * 0.1;
+    prestazione += (riflessi - 70) * 0.2;
+    prestazione += (reattivita - 70) * 0.15;
+    prestazione += (piazzamento - 70) * 0.15;
+    if (overall) {
+      prestazione += (overall - 70) * 0.3;
+    }
+    return Math.round(Math.max(0, Math.min(100, prestazione)));
+  }
 
-  return Math.round(Math.max(0, prestazioneModificata));
+  // Handling for field players
+  const { velocita, tiro, passaggio, dribbling, difesa, fisico } = giocatore;
+  if ([velocita, tiro, passaggio, dribbling, difesa, fisico].some(s => s === undefined)) {
+    return (overall || 50); // Fallback if stats are missing
+  }
+
+  let prestazione = 50; // Base value
+
+  // Bonus/Malus based on stats
+  prestazione += (velocita - 70) * 0.1;
+  prestazione += (tiro - 70) * 0.1;
+  prestazione += (passaggio - 70) * 0.1;
+  prestazione += (dribbling - 70) * 0.1;
+  prestazione += (difesa - 70) * 0.1;
+  prestazione += (fisico - 70) * 0.1;
+
+  // Bonus/Malus based on overall
+  if (overall) {
+    prestazione += (overall - 70) * 0.4;
+  }
+
+  return Math.round(Math.max(0, Math.min(100, prestazione)));
 }
 
 /**

@@ -7,14 +7,6 @@ import LineupSelection from './components/LineupSelection';
 import TopScorers from './components/TopScorers';
 import './App.css';
 
-// Helper function to extract the last name from a full name for robust matching
-//const getLastName = (fullName) => {
-  //if (typeof fullName !== 'string' || !fullName) return '';
-  //const parts = fullName.trim().toLowerCase().split(' ');
-  // Get the last part and normalize it by removing non-alphanumeric characters
-  //return parts[parts.length - 1].normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, '');
-//};
-
 function AppContent() {
   const [selectionData, setSelectionData] = useState(null);
   const [lineupData, setLineupData] = useState(null);
@@ -22,26 +14,8 @@ function AppContent() {
   const [step, setStep] = useState('team');
   const [userMatchResult, setUserMatchResult] = useState(null);
   const [pendingMatch, setPendingMatch] = useState(null);
-  // const [localPlayerStats, setLocalPlayerStats] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Fetch local player stats once on mount
-  /*
-  useEffect(() => {
-    const fetchLocalStats = async () => {
-      try {
-        const response = await fetch('/player.json');
-        const data = await response.json();
-        const statsMap = new Map(data.players.map(p => [getLastName(p.nome), p]));
-        setLocalPlayerStats(statsMap);
-      } catch (error) {
-        console.error("Failed to load local player stats:", error);
-      }
-    };
-    fetchLocalStats();
-  }, []);
-  */
-
-  // Effect to load data from session and apply overrides once local stats are ready
   useEffect(() => {
     const savedSelection = sessionStorage.getItem('selectionData');
     if (savedSelection) {
@@ -73,49 +47,90 @@ function AppContent() {
     }
   }, []); // Run only once on mount
 
-  const handleTeamSelected = ({ team: selectedTeam, style, allTeams }) => {
-    // Ensure every team has a squad array to prevent crashes
-    const allTeamsData = allTeams.map(team => {
-      if (!team.squad) {
-        console.warn(`Squadra ${team.name} non trovata, si usa una squadra di default.`);
-        // Use a simple default squad structure
-        const defaultSquad = Array.from({ length: 15 }, (_, i) => ({
-          id: team.id * 1000 + i + 1,
-          name: `Player ${i + 1}`,
-          position: i === 0 ? 'Goalkeeper' : (i < 5 ? 'Defender' : (i < 10 ? 'Midfielder' : 'Attacker')),
-          stamina: 100
-        }));
-        return { ...team, squad: defaultSquad };
-      }
-      // Deduplicate squad to prevent issues with duplicate player IDs
-      const uniqueSquad = [...new Map(team.squad.map(p => [p.id, p])).values()];
-      return { ...team, squad: uniqueSquad };
-    });
+  const handleTeamSelected = async ({ team: selectedTeam, style, allTeams }) => {
+    setLoading(true);
+    
+    try {
+      console.log('Loading squad data for all teams...');
+      
+      const allTeamsData = await Promise.all(
+        allTeams.map(async (team, index) => {
+          if (index > 0) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+          }
+          
+          try {
+            console.log(`Loading squad for ${team.name}...`);
+            
+            const response = await fetch(`/api/v4/teams/${team.id}?season=2024`);
+            
+            if (response.ok) {
+              const teamData = await response.json();
+              console.log(`✓ Loaded squad for ${team.name}: ${teamData.squad?.length || 0} players`);
+              return { ...team, squad: teamData.squad || [] };
+            } else {
+              console.warn(`⚠ Failed to load squad for ${team.name} (${response.status}), using default squad`);
+              const defaultSquad = Array.from({ length: 25 }, (_, i) => ({
+                id: team.id * 1000 + i + 1,
+                name: `${team.name.split(' ')[0]} Player ${i + 1}`,
+                position: i === 0 ? 'Goalkeeper' : (i < 8 ? 'Defender' : (i < 16 ? 'Midfielder' : 'Attacker')),
+                nationality: 'Italy',
+                dateOfBirth: '1995-01-01',
+                shirtNumber: i + 1
+              }));
+              return { ...team, squad: defaultSquad };
+            }
+          } catch (error) {
+            console.warn(`✗ Error loading squad for ${team.name}:`, error.message);
+            const defaultSquad = Array.from({ length: 25 }, (_, i) => ({
+              id: team.id * 1000 + i + 1,
+              name: `${team.name.split(' ')[0]} Player ${i + 1}`,
+              position: i === 0 ? 'Goalkeeper' : (i < 8 ? 'Defender' : (i < 16 ? 'Midfielder' : 'Attacker')),
+              nationality: 'Italy',
+              dateOfBirth: '1995-01-01',
+              shirtNumber: i + 1
+            }));
+            return { ...team, squad: defaultSquad };
+          }
+        })
+      );
 
-    const finalUserTeam = allTeamsData.find(t => t.id === selectedTeam.id);
+      console.log('All teams processed');
+      const finalUserTeam = allTeamsData.find(t => t.id === selectedTeam.id);
 
-    const selection = {
-      userTeam: finalUserTeam,
-      teams: allTeamsData,
-      userTeamStyle: style,
-      competition: { name: 'Serie A', code: 'SA' },
-    };
+      const selection = {
+        userTeam: finalUserTeam,
+        teams: allTeamsData,
+        userTeamStyle: style,
+        competition: { name: 'Serie A', code: 'SA' },
+      };
 
-    setSelectionData(selection);
-    sessionStorage.setItem('selectionData', JSON.stringify(selection));
-    setStep('lineup');
+      setSelectionData(selection);
+      sessionStorage.setItem('selectionData', JSON.stringify(selection));
+      setStep('lineup');
+    } catch (error) {
+      console.error('Error in handleTeamSelected:', error);
+      const selection = {
+        userTeam: selectedTeam,
+        teams: allTeams,
+        userTeamStyle: style,
+        competition: { name: 'Serie A', code: 'SA' },
+      };
+      setSelectionData(selection);
+      setStep('lineup');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLineupConfirm = (lineup) => {
     const allTeamsLineupData = selectionData.teams.map(team => {
       if (team.id === selectionData.userTeam.id) {
-        // For the user's team, use the newly confirmed lineup
         return {
           team_id: team.id,
           players: [...Object.values(lineup.titolari), ...lineup.panchina],
         };
       }
-      // For all other teams, use their existing squad
       return {
         team_id: team.id,
         players: team.squad || [],
@@ -168,7 +183,6 @@ function AppContent() {
   };
 
   const renderStep = () => {
-    // Wait until data is loaded before rendering children
     if (step !== 'team' && !selectionData) {
         return <div className="loading-container">Loading...</div>;
     }
@@ -202,7 +216,7 @@ function AppContent() {
 
   return (
     <main>
-      {renderStep()}
+      {loading ? <div className="loading-container">Loading...</div> : renderStep()}
     </main>
   );
 }

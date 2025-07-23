@@ -25,7 +25,27 @@ export default function TeamSelection({ onTeamSelected }) {
           throw new Error(`API error! status: ${response.status}`);
         }
         const data = await response.json();
-        setTeams(data.teams || []);
+        
+        // Fetch full squad data for each team
+        const teamsWithSquads = await Promise.all(
+          (data.teams || []).map(async (team) => {
+            try {
+              const teamResponse = await fetch(`${baseUrl}/teams/${team.id}?season=${currentSeason}`);
+              if (teamResponse.ok) {
+                const teamData = await teamResponse.json();
+                return { ...team, squad: teamData.squad || [] };
+              } else {
+                console.warn(`Failed to fetch squad for ${team.name}, using basic data`);
+                return team;
+              }
+            } catch (error) {
+              console.warn(`Error fetching squad for ${team.name}:`, error);
+              return team;
+            }
+          })
+        );
+        
+        setTeams(teamsWithSquads);
       } catch (e) {
         console.error("Failed to fetch from API, trying local file:", e);
         // If API fails, try to fetch from local file

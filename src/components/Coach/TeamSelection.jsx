@@ -18,7 +18,8 @@ export default function TeamSelection({ onTeamSelected }) {
     const fetchTeams = async () => {
       try {
         // First try to fetch from the API
-        const response = await fetch(`/competitions/${competitionCode}/teams`);
+        const baseUrl = process.env.NODE_ENV === 'production' ? '/api/v4' : '';
+        const response = await fetch(`${baseUrl}/competitions/${competitionCode}/teams`);
         if (!response.ok) {
           throw new Error(`API error! status: ${response.status}`);
         }
@@ -55,7 +56,8 @@ export default function TeamSelection({ onTeamSelected }) {
     setError(null);
 
     try {
-      const response = await fetch(`/teams/${selectedTeamId}`);
+      const baseUrl = process.env.NODE_ENV === 'production' ? '/api/v4' : '';
+      const response = await fetch(`${baseUrl}/teams/${selectedTeamId}`);
       let teamData;
 
       if (response.ok) {

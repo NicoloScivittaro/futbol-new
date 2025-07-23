@@ -303,6 +303,27 @@ const LineupSelection = ({ selectionData, onNext, onBack, initialLineup, onPlaye
     });
   };
 
+  const handleClear = () => {
+    const allPlayers = [...formation.titolari, ...formation.panchina, ...formation.rosaDisponibile];
+    setFormation({
+      titolari: [],
+      panchina: [],
+      rosaDisponibile: allPlayers
+    });
+  };
+
+  const handleSave = () => {
+    if (formation.titolari.length !== 11) {
+      alert('Devi selezionare 11 giocatori titolari!');
+      return;
+    }
+    onNext({ 
+      formation: currentFormation,
+      titolari: formation.titolari,
+      panchina: formation.panchina
+    });
+  };
+
   const calculatePlayerRating = (player, fieldRole) => {
     if (!player) return 0;
 

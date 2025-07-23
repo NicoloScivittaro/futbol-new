@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './LineupSelection.css';
 import FormationDisplay from './FormationDisplay';
+import { calcolaPrestazione, calcolaPrestazionePerRuolo } from '../utils/performanceCalculator';
 
 const FORMATIONS = {
   '4-3-3': {
@@ -228,7 +229,7 @@ const LineupSelection = ({ selectionData, onNext, onBack, initialLineup }) => {
 
     // Categorize and sort players by role and overall rating
     allPlayers.forEach(player => {
-      const role = getCanonicalPosition(player.position);
+      const role = getCanonicalPosition(player.ruolo);
       if (playersByRole[role]) {
         playersByRole[role].push(player);
       }
@@ -307,14 +308,24 @@ const LineupSelection = ({ selectionData, onNext, onBack, initialLineup }) => {
 
   const calculatePlayerRating = (player, fieldRole) => {
     if (!player) return 0;
+    
+    // Use the new performance calculator if all stats are available
+    if (player.velocita && player.tiro && player.passaggio && player.dribbling && player.difesa && player.fisico) {
+      const performanceRating = calcolaPrestazione(player);
+      const playerRole = getCanonicalPosition(player.ruolo);
+      const compatibility = POSITION_COMPATIBILITY[playerRole]?.[fieldRole] || 0.5;
+      return Math.round(performanceRating * compatibility);
+    }
+    
+    // Fallback to simple overall-based calculation
     const baseRating = player.overall || 70;
-    const playerRole = getCanonicalPosition(player.position);
-    const compatibility = POSITION_COMPATIBILITY[playerRole]?.[fieldRole] || 0.5; // Default to 50% penalty if no compatibility is found
+    const playerRole = getCanonicalPosition(player.ruolo);
+    const compatibility = POSITION_COMPATIBILITY[playerRole]?.[fieldRole] || 0.5;
     return Math.round(baseRating * compatibility);
   };
 
   const getPositionStatus = (player, fieldRole) => {
-    const playerRole = getCanonicalPosition(player.position);
+    const playerRole = getCanonicalPosition(player.ruolo);
     const compatibility = POSITION_COMPATIBILITY[playerRole]?.[fieldRole] || 0.5;
     if (compatibility === 1.0) return 'natural';
     if (compatibility >= 0.8) return 'adapted';

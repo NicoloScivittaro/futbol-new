@@ -70,12 +70,25 @@ const FORMATIONS = {
 
 const getRole = (position) => {
   if (!position) return '?';
-  switch (position) {
-    case 'Goalkeeper': return 'P';
-    case 'Defender': return 'D';
-    case 'Midfielder': return 'C';
-    case 'Attacker': return 'A';
-    default: return position.charAt(0).toUpperCase();
+  const pos = position.toString().toUpperCase();
+  
+  // Handle Italian abbreviated positions
+  switch (pos) {
+    case 'POR': return 'P';
+    case 'DIF': return 'D';
+    case 'CEN': return 'C';
+    case 'ATT': return 'A';
+    case 'TQ': return 'T';
+    case 'ALA': return 'A';
+    case 'AS': return 'A';
+    case 'SS': return 'A';
+    case 'PC': return 'A';
+    // Handle English terms
+    case 'GOALKEEPER': return 'P';
+    case 'DEFENDER': return 'D';
+    case 'MIDFIELDER': return 'C';
+    case 'ATTACKER': return 'A';
+    default: return pos.charAt(0).toUpperCase();
   }
 };
 
@@ -134,7 +147,7 @@ const FormationDisplay = ({
                   key={player.id}
                   onClick={() => onPlayerClick(player, 'rosaDisponibile')}
                   className={`player-card ${selectedPlayerForSwap?.player.id === player.id ? 'selected' : ''}`}>
-                  <div className="player-role">{getRole(player.position)}</div>
+                  <div className="player-role">{getRole(player.ruolo)}</div>
                   <div className="player-info">
                     <p className="player-name">{player.name}</p>
                     <span className="player-rating">OVR: {calculatePlayerRating(player)}</span>
@@ -168,7 +181,7 @@ const FormationDisplay = ({
                     <div className={`player-token ${status} ${selectedPlayerForSwap?.player.id === player.id ? 'selected' : ''}`}>
                       <div className="player-name">{player ? player.name : positionKey.split('-')[0]}</div>
                       <div className="player-token-rating">{rating}</div>
-                      <div className="player-token-position">{getRole(player.position)}</div>
+                      <div className="player-token-position">{getRole(player.ruolo)}</div>
                     </div>
                   ) : (
                     <div className="empty-position">
@@ -194,7 +207,7 @@ const FormationDisplay = ({
                   key={player.id}
                   onClick={() => onPlayerClick(player, 'panchina')}
                   className={`player-card ${selectedPlayerForSwap?.player.id === player.id ? 'selected' : ''}`}>
-                  <div className="player-role">{getRole(player.position)}</div>
+                  <div className="player-role">{getRole(player.ruolo)}</div>
                   <div className="player-info">
                     <p className="player-name">{player.name}</p>
                     <span className="player-rating">OVR: {calculatePlayerRating(player, 'panchina')}</span>

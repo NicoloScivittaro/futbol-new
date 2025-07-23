@@ -8,7 +8,7 @@ import TopScorers from './components/TopScorers';
 import './App.css';
 
 // TODO: Move this to a .env file for better security
-const API_KEY = '55e64e34833c444399581c586407b864';
+// const API_KEY = '55e64e34833c444399581c586407b864';
 
 // Helper function to extract the last name from a full name for robust matching
 const getLastName = (fullName) => {
@@ -303,4 +303,3 @@ function App() {
 }
 
 export default App;
-

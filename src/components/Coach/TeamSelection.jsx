@@ -17,9 +17,10 @@ export default function TeamSelection({ onTeamSelected }) {
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        // First try to fetch from the API
+        // First try to fetch from the API with current season
         const baseUrl = process.env.NODE_ENV === 'production' ? '/api/v4' : '';
-        const response = await fetch(`${baseUrl}/competitions/${competitionCode}/teams`);
+        const currentSeason = '2024';
+        const response = await fetch(`${baseUrl}/competitions/${competitionCode}/teams?season=${currentSeason}`);
         if (!response.ok) {
           throw new Error(`API error! status: ${response.status}`);
         }
@@ -48,7 +49,7 @@ export default function TeamSelection({ onTeamSelected }) {
     fetchTeams();
   }, []);
 
-    const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedTeamId || !selectedStyle) return;
 
@@ -57,7 +58,8 @@ export default function TeamSelection({ onTeamSelected }) {
 
     try {
       const baseUrl = process.env.NODE_ENV === 'production' ? '/api/v4' : '';
-      const response = await fetch(`${baseUrl}/teams/${selectedTeamId}`);
+      const currentSeason = '2024';
+      const response = await fetch(`${baseUrl}/teams/${selectedTeamId}?season=${currentSeason}`);
       let teamData;
 
       if (response.ok) {

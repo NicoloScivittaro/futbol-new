@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './LineupSelection.css';
 import FormationDisplay from './FormationDisplay';
-import { calcolaPrestazione } from '../utils/performanceCalculator';
+import { calcolaPrestazionePerRuolo } from '../utils/performanceCalculator';
 
 const FORMATIONS = {
   '4-3-3': {
@@ -306,20 +306,27 @@ const LineupSelection = ({ selectionData, onNext, onBack, initialLineup }) => {
     });
   };
 
-  const calculatePlayerRating = (player, fieldRole) => {
+    const calculatePlayerRating = (player, fieldRole) => {
     if (!player) return 0;
-    
-    // Use the new performance calculator if all stats are available
-    if (player.velocita && player.tiro && player.passaggio && player.dribbling && player.difesa && player.fisico) {
-      const performanceRating = calcolaPrestazione(player);
-      const playerRole = getCanonicalPosition(player.ruolo);
+
+    const playerRole = getCanonicalPosition(player.ruolo);
+
+    // Use the role-specific performance calculator if stats are available
+    const hasAllStats = player.velocita && player.tiro && player.passaggio && player.dribbling && player.difesa && player.fisico;
+    const hasGoalkeeperStats = player.tuffo && player.presa && player.rinvio && player.riflessi && player.reattivita && player.piazzamento;
+
+    if (playerRole === 'goalkeeper' && hasGoalkeeperStats) {
+      const performanceRating = calcolaPrestazionePerRuolo(player, 'goalkeeper');
+      const compatibility = POSITION_COMPATIBILITY[playerRole]?.[fieldRole] || 0.5;
+      return Math.round(performanceRating * compatibility);
+    } else if (playerRole !== 'goalkeeper' && hasAllStats) {
+      const performanceRating = calcolaPrestazionePerRuolo(player, playerRole);
       const compatibility = POSITION_COMPATIBILITY[playerRole]?.[fieldRole] || 0.5;
       return Math.round(performanceRating * compatibility);
     }
-    
-    // Fallback to simple overall-based calculation
+
+    // Fallback to simple overall-based calculation if stats are incomplete
     const baseRating = player.overall || 70;
-    const playerRole = getCanonicalPosition(player.ruolo);
     const compatibility = POSITION_COMPATIBILITY[playerRole]?.[fieldRole] || 0.5;
     return Math.round(baseRating * compatibility);
   };

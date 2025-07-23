@@ -51,7 +51,7 @@ export function calcolaPrestazionePerRuolo(giocatore, ruolo) {
   
   // Moltiplicatori specifici per ruolo
   const moltiplicatori = {
-    'POR': {
+    'goalkeeper': {
       tuffo: 0.4,
       presa: 0.3,
       rinvio: 0.2,
@@ -59,19 +59,25 @@ export function calcolaPrestazionePerRuolo(giocatore, ruolo) {
       reattivita: 0.3,
       piazzamento: 0.3
     },
-    'DIF': {
+    'defender': {
       difesa: 0.4,
       fisico: 0.3,
       velocita: 0.2,
       passaggio: 0.2
     },
-    'CEN': {
+    'midfielder': {
       passaggio: 0.4,
       dribbling: 0.3,
       fisico: 0.2,
       velocita: 0.2
     },
-    'ATT': {
+    'attacking-midfielder': {
+      passaggio: 0.3,
+      dribbling: 0.3,
+      tiro: 0.3,
+      velocita: 0.2
+    },
+    'forward': {
       tiro: 0.4,
       dribbling: 0.3,
       velocita: 0.3,

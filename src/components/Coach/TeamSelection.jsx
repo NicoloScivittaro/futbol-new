@@ -12,7 +12,6 @@ export default function TeamSelection({ onTeamSelected }) {
   const [error, setError] = useState(null);
   const [selectedTeamId, setSelectedTeamId] = useState("");
   const [selectedStyle, setSelectedStyle] = useState("");
-  const competitionCode = 'SA';
 
   useEffect(() => {
     const fetchTeams = async () => {

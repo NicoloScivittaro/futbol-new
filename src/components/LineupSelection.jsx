@@ -77,13 +77,24 @@ const getPositionsForTactic = (tactic) => {
 
 const getCanonicalPosition = (apiPosition) => {
   if (typeof apiPosition !== 'string') return 'midfielder';
-  const pos = apiPosition.toLowerCase();
+  const pos = apiPosition.toUpperCase().trim();
 
-  if (pos.includes('goal') || pos.includes('portiere')) return 'goalkeeper';
-  if (pos.includes('defen') || pos.includes('back') || pos.includes('difensore') || pos.includes('terzino')) return 'defender';
-  if ((pos.includes('attack') && pos.includes('midfield')) || pos.includes('trequartista') || (pos.includes('centrocampista') && pos.includes('offensivo'))) return 'attacking-midfielder';
-  if (pos.includes('midfield') || pos.includes('centrocampista')) return 'midfielder';
-  if (pos.includes('forward') || pos.includes('attack') || pos.includes('striker') || pos.includes('winger') || pos.includes('attaccante') || pos.includes('ala')) return 'forward';
+  // Handle Italian abbreviated positions first
+  if (pos === 'POR') return 'goalkeeper';
+  if (pos === 'DIF') return 'defender';
+  if (pos === 'CEN') return 'midfielder';
+  if (pos === 'ATT') return 'forward';
+  if (pos === 'TQ') return 'attacking-midfielder'; // Trequartista
+  if (pos === 'ALA' || pos === 'AS' || pos === 'SS') return 'forward'; // Ala/Ala Sinistra/Seconda Punta
+  if (pos === 'PC') return 'forward'; // Prima Punta/Centro
+
+  // Handle full Italian terms
+  const lowerPos = pos.toLowerCase();
+  if (lowerPos.includes('goal') || lowerPos.includes('portiere')) return 'goalkeeper';
+  if (lowerPos.includes('defen') || lowerPos.includes('back') || lowerPos.includes('difensore') || lowerPos.includes('terzino')) return 'defender';
+  if ((lowerPos.includes('attack') && lowerPos.includes('midfield')) || lowerPos.includes('trequartista') || (lowerPos.includes('centrocampista') && lowerPos.includes('offensivo'))) return 'attacking-midfielder';
+  if (lowerPos.includes('midfield') || lowerPos.includes('centrocampista')) return 'midfielder';
+  if (lowerPos.includes('forward') || lowerPos.includes('attack') || lowerPos.includes('striker') || lowerPos.includes('winger') || lowerPos.includes('attaccante') || lowerPos.includes('ala')) return 'forward';
 
   return 'midfielder'; // Default to midfielder for unknown roles
 };

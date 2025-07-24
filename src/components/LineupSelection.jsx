@@ -328,22 +328,22 @@ const LineupSelection = ({ selectionData, onNext, onBack, initialLineup, onPlaye
     if (!player) return 0;
 
     const playerRole = getCanonicalPosition(player.ruolo);
+    let baseRating;
 
     const hasAllStats = player.velocita && player.tiro && player.passaggio && player.dribbling && player.difesa && player.fisico;
     const hasGoalkeeperStats = player.tuffo && player.presa && player.rinvio && player.riflessi && player.reattivita && player.piazzamento;
 
     if (playerRole === 'goalkeeper' && hasGoalkeeperStats) {
-      const performanceRating = calcolaPrestazionePerRuolo(player, 'goalkeeper');
-      const compatibility = POSITION_COMPATIBILITY[playerRole]?.[fieldRole] || 0.5;
-      return Math.round(performanceRating * compatibility);
+      baseRating = calcolaPrestazionePerRuolo(player, 'goalkeeper');
     } else if (playerRole !== 'goalkeeper' && hasAllStats) {
-      const performanceRating = calcolaPrestazionePerRuolo(player, playerRole);
-      const compatibility = POSITION_COMPATIBILITY[playerRole]?.[fieldRole] || 0.5;
-      return Math.round(performanceRating * compatibility);
+      baseRating = calcolaPrestazionePerRuolo(player, playerRole);
+    } else {
+      baseRating = player.overall || 70;
     }
 
-    const baseRating = player.overall || 70;
-    const compatibility = POSITION_COMPATIBILITY[playerRole]?.[fieldRole] || 0.5;
+    // If fieldRole is not provided (e.g., for bench or available players), assume natural position.
+    const compatibility = fieldRole ? (POSITION_COMPATIBILITY[playerRole]?.[fieldRole] || 0.5) : 1.0;
+
     return Math.round(baseRating * compatibility);
   };
 

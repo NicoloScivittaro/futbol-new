@@ -95,9 +95,15 @@ const getCanonicalPosition = (apiPosition) => {
   if (lowerPos.includes('defen') || lowerPos.includes('back') || lowerPos.includes('difensore') || lowerPos.includes('terzino')) return 'defender';
   if ((lowerPos.includes('attack') && lowerPos.includes('midfield')) || lowerPos.includes('trequartista') || (lowerPos.includes('centrocampista') && lowerPos.includes('offensivo'))) return 'attacking-midfielder';
   if (lowerPos.includes('midfield') || lowerPos.includes('centrocampista')) return 'midfielder';
-  if (lowerPos.includes('forward') || lowerPos.includes('attack') || lowerPos.includes('striker') || lowerPos.includes('winger') || lowerPos.includes('attaccante') || lowerPos.includes('ala')) return 'forward';
+  if (lowerPos.includes('forward') || lowerPos.includes('attack') || lowerPos.includes('winger') || lowerPos.includes('striker') || lowerPos.includes('attaccante') || lowerPos.includes('ala') || lowerPos.includes('punta')) return 'forward';
 
-  return 'midfielder'; // Default to midfielder for unknown roles
+  // A more robust fallback
+  if (pos.includes('ATT') || pos.includes('STR') || pos.includes('FWD')) return 'forward';
+  if (pos.includes('MID') || pos.includes('CAM') || pos.includes('CDM')) return 'midfielder';
+  if (pos.includes('DEF') || pos.includes('CB') || pos.includes('LB') || pos.includes('RB')) return 'defender';
+  if (pos.includes('GK')) return 'goalkeeper';
+
+  return 'midfielder'; // Final fallback to midfielder for unknown roles
 };
 
 const POSITION_COMPATIBILITY = {

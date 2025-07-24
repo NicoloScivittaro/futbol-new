@@ -88,6 +88,7 @@ const getRole = (position) => {
     case 'DEFENDER': return 'D';
     case 'MIDFIELDER': return 'C';
     case 'ATTACKER': return 'A';
+    case 'ATTACKING-MIDFIELDER': return 'T';
     default: return pos.charAt(0).toUpperCase();
   }
 };
@@ -205,7 +206,7 @@ const FormationDisplay = ({
               {formation.panchina.map((player, index) => (
                 <div
                   key={player.id}
-                  onClick={() => onPlayerClick(player, 'panchina')}
+                  onClick={() => onPlayerClick(player, 'panchina', `bench-${index}`)}
                   className={`player-card ${selectedPlayerForSwap?.player.id === player.id ? 'selected' : ''}`}>
                   <div className="player-role">{getRole(player.ruolo)}</div>
                   <div className="player-info">

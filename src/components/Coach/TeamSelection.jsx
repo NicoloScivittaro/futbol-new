@@ -45,16 +45,28 @@ export default function TeamSelection({ onTeamSelected }) {
           const convertedPlayer = {
             id: player.id,
             name: player.nome,
-            position: player.ruolo,
+            ruolo: player.ruolo,
+            ruoliSecondari: player.ruoliSecondari,
             dateOfBirth: player.annoNascita ? `${player.annoNascita}-01-01` : null,
             nationality: player.nazionalita ? player.nazionalita[0] : 'Unknown',
             shirtNumber: player.numeroMaglia,
             marketValue: player.valoreMercato,
-            // Add additional attributes from player.json
             overall: player.overall,
             height: player.altezzaCm,
             weight: player.pesoKg,
-            contractExpiry: player.scadenzaContratto
+            contractExpiry: player.scadenzaContratto,
+            velocita: player.velocita,
+            tiro: player.tiro,
+            passaggio: player.passaggio,
+            dribbling: player.dribbling,
+            difesa: player.difesa,
+            fisico: player.fisico,
+            tuffo: player.tuffo,
+            presa: player.presa,
+            rinvio: player.rinvio,
+            riflessi: player.riflessi,
+            reattivita: player.reattivita,
+            piazzamento: player.piazzamento
           };
           
           playersByTeam[teamName].push(convertedPlayer);
